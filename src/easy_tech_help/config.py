@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 @dataclass(frozen=True)
 class Settings:
-    """Local model selection, to be used by the future analysis module."""
+    """Local vision model selection."""
 
     local_model: str | None
 
