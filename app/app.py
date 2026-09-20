@@ -12,8 +12,8 @@ st.info("This is an early preview. Screenshot analysis is not available yet.")
 st.subheader("What EasyTechHelp is being built to help with")
 st.markdown(
     """
-    - Pop-ups and security warnings
-    - Text messages and emails
-    - Wi-Fi and connectivity settings
+    - Safari pop-ups and security warnings on iPhone
+    - Text messages and emails on iPhone
+    - iPhone Wi-Fi and connectivity settings
     """
 )

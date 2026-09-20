@@ -1,18 +1,13 @@
-"""Checks for the configuration boundary used by future API integration."""
+"""Checks for the future local model configuration boundary."""
 
 from easy_tech_help.config import load_settings
 
 
-def test_environment_overrides_dotenv_without_exposing_api_key(monkeypatch, tmp_path):
-    (tmp_path / ".env").write_text(
-        "EASY_TECH_HELP_API_KEY=file-secret\nEASY_TECH_HELP_MODEL=example-model\n"
-    )
+def test_environment_overrides_dotenv(monkeypatch, tmp_path):
+    (tmp_path / ".env").write_text("EASY_TECH_HELP_LOCAL_MODEL=file-model\n")
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("EASY_TECH_HELP_API_KEY", "environment-secret")
-    monkeypatch.delenv("EASY_TECH_HELP_MODEL", raising=False)
+    monkeypatch.setenv("EASY_TECH_HELP_LOCAL_MODEL", "environment-model")
 
     settings = load_settings()
 
-    assert settings.api_key == "environment-secret"
-    assert settings.model == "example-model"
-    assert "environment-secret" not in repr(settings)
+    assert settings.local_model == "environment-model"

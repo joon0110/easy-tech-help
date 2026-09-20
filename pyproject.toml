@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "easy-tech-help"
 version = "0.1.0"
-description = "Multimodal AI tech support for older adults and their families"
+description = "Local multimodal AI tech support for older adults and their families"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

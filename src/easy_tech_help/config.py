@@ -1,7 +1,7 @@
-"""Read local configuration without exposing credentials in debug output."""
+"""Read optional configuration for the local-only application."""
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -9,17 +9,13 @@ from dotenv import load_dotenv
 
 @dataclass(frozen=True)
 class Settings:
-    """Configuration reserved for the multimodal integration."""
+    """Local model selection, to be used by the future analysis module."""
 
-    api_key: str | None = field(repr=False)
-    model: str | None
+    local_model: str | None
 
 
 def load_settings() -> Settings:
     """Load optional settings, preserving values already set in the environment."""
 
     load_dotenv(dotenv_path=Path.cwd() / ".env", override=False)
-    return Settings(
-        api_key=os.getenv("EASY_TECH_HELP_API_KEY") or None,
-        model=os.getenv("EASY_TECH_HELP_MODEL") or None,
-    )
+    return Settings(local_model=os.getenv("EASY_TECH_HELP_LOCAL_MODEL") or None)

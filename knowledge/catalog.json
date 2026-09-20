@@ -1,0 +1,232 @@
+{
+  "version": 3,
+  "downloaded_on": "2026-09-20",
+  "documents": [
+    {
+      "id": "popup_tech_support",
+      "file": "original/popup_tech_support.html",
+      "title": "FTC: How To Spot, Avoid, and Report Tech Support Scams",
+      "category": "popup",
+      "platform": "any",
+      "tags": [
+        "popup",
+        "virus",
+        "security",
+        "support",
+        "phone",
+        "remote access",
+        "payment"
+      ],
+      "sources": [
+        {
+          "url": "https://consumer.ftc.gov/articles/how-spot-avoid-and-report-tech-support-scams"
+        }
+      ],
+      "source_type": "original_html"
+    },
+    {
+      "id": "message_phishing",
+      "file": "original/message_phishing.html",
+      "title": "FTC: How To Recognize and Avoid Phishing Scams",
+      "category": "message",
+      "platform": "any",
+      "tags": [
+        "message",
+        "text",
+        "email",
+        "phishing",
+        "bank",
+        "link",
+        "password",
+        "payment",
+        "account"
+      ],
+      "sources": [
+        {
+          "url": "https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams"
+        }
+      ],
+      "source_type": "original_html"
+    },
+    {
+      "id": "message_spam_text",
+      "file": "original/message_spam_text.html",
+      "title": "FTC: How to Recognize and Report Spam Text Messages",
+      "category": "message",
+      "platform": "any",
+      "tags": [
+        "message",
+        "sms",
+        "text",
+        "spam",
+        "iphone",
+        "delivery",
+        "package",
+        "invoice",
+        "account",
+        "link"
+      ],
+      "sources": [
+        {
+          "url": "https://consumer.ftc.gov/articles/how-recognize-and-report-spam-text-messages"
+        }
+      ],
+      "source_type": "original_html"
+    },
+    {
+      "id": "message_avoid_scam",
+      "file": "original/message_avoid_scam.html",
+      "title": "FTC: How To Avoid a Scam",
+      "category": "message",
+      "platform": "any",
+      "tags": [
+        "message",
+        "email",
+        "text",
+        "scam",
+        "verify",
+        "unknown sender",
+        "payment"
+      ],
+      "sources": [
+        {
+          "url": "https://consumer.ftc.gov/articles/how-avoid-scam"
+        }
+      ],
+      "source_type": "original_html"
+    },
+    {
+      "id": "wifi_public_safety",
+      "file": "original/wifi_public_safety.html",
+      "title": "FTC: Are Public Wi-Fi Networks Safe? What You Need To Know",
+      "category": "wifi",
+      "platform": "any",
+      "tags": [
+        "wifi",
+        "public network",
+        "hotspot",
+        "security",
+        "encryption",
+        "privacy"
+      ],
+      "sources": [
+        {
+          "url": "https://consumer.ftc.gov/articles/are-public-wi-fi-networks-safe-what-you-need-know"
+        }
+      ],
+      "source_type": "original_html"
+    },
+    {
+      "id": "wifi_home_security",
+      "file": "original/wifi_home_security.html",
+      "title": "FTC: How To Secure Your Home Wi-Fi Network",
+      "category": "wifi",
+      "platform": "any",
+      "tags": [
+        "wifi",
+        "home network",
+        "router",
+        "security",
+        "encryption"
+      ],
+      "sources": [
+        {
+          "url": "https://consumer.ftc.gov/articles/how-secure-your-home-wi-fi-network"
+        }
+      ],
+      "source_type": "original_html"
+    },
+    {
+      "id": "popup_safari",
+      "file": "apple_summaries/popup_safari.txt",
+      "title": "Safari pop-up guidance for iPhone",
+      "category": "popup",
+      "platform": "ios",
+      "source_type": "authored_summary",
+      "tags": [
+        "safari",
+        "popup",
+        "ordinary ad",
+        "fake close",
+        "warning",
+        "fraudulent website",
+        "block popups",
+        "tab"
+      ],
+      "sources": [
+        {
+          "url": "https://support.apple.com/en-us/102524"
+        }
+      ]
+    },
+    {
+      "id": "message_apple_account",
+      "file": "apple_summaries/message_apple_account.txt",
+      "title": "Apple Account message and support impersonation guidance",
+      "category": "message",
+      "platform": "ios",
+      "source_type": "authored_summary",
+      "tags": [
+        "apple",
+        "account",
+        "support",
+        "phishing",
+        "security code",
+        "verification code",
+        "password",
+        "icloud"
+      ],
+      "sources": [
+        {
+          "url": "https://support.apple.com/en-us/102568"
+        }
+      ]
+    },
+    {
+      "id": "wifi_iphone",
+      "file": "apple_summaries/wifi_iphone.txt",
+      "title": "iPhone Wi-Fi connection troubleshooting",
+      "category": "wifi",
+      "platform": "ios",
+      "source_type": "authored_summary",
+      "tags": [
+        "iphone",
+        "wifi",
+        "wifi off",
+        "connected",
+        "no internet",
+        "airplane mode",
+        "router",
+        "connection",
+        "network reset"
+      ],
+      "sources": [
+        {
+          "url": "https://support.apple.com/en-us/111786"
+        }
+      ]
+    },
+    {
+      "id": "wifi_join_iphone",
+      "file": "apple_summaries/wifi_join_iphone.txt",
+      "title": "Join a known Wi-Fi network on iPhone",
+      "category": "wifi",
+      "platform": "ios",
+      "source_type": "authored_summary",
+      "tags": [
+        "iphone",
+        "wifi",
+        "join",
+        "known network",
+        "password",
+        "blue checkmark"
+      ],
+      "sources": [
+        {
+          "url": "https://support.apple.com/en-us/111107"
+        }
+      ]
+    }
+  ],
+  "reviewed_on": "2026-09-20"
+}

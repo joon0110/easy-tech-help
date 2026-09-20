@@ -1,0 +1,13 @@
+# Local RAG sources
+
+`original/` contains six original HTML pages downloaded from the US Federal Trade Commission on 2026-09-20. The pages are stored as received, with source URLs in `catalog.json`. The [FTC website policy](https://www.ftc.gov/policy-notices/website-policy) says most FTC material is US government work in the public domain and asks for attribution when reused. The FTC does not endorse this project.
+
+`apple_summaries/` contains four short, original summaries written after reviewing the Apple support pages on 2026-09-20. They cover Safari pop-ups, Apple Account impersonation, iPhone Wi-Fi troubleshooting, and joining a known network. They are plain text rather than copies of Apple pages. `catalog.json` labels every document as `original_html` or `authored_summary` and records the source URL.
+
+`easy_tech_help.retrieval.search_documents()` reads both types of local files and never fetches a URL at runtime. A search match is general guidance, not proof that a screenshot is safe or a sender is legitimate. The app should identify Apple-based summaries as summaries when citing them.
+
+The downloaded FTC pages include the site's scripts and styles. Their script at line 18 contains `#    toolbarTray.prepend(label);`, which an editor can flag as invalid JavaScript. The retriever does not run scripts or display these HTML pages; it extracts only the main article text. Keep the snapshots unchanged so they remain faithful copies of the downloaded response.
+
+The iPhone-specific references are [Apple Safari pop-up support](https://support.apple.com/en-us/102524), [Apple social engineering support](https://support.apple.com/en-us/102568), [Apple Wi-Fi troubleshooting](https://support.apple.com/en-us/111786), and [Apple Wi-Fi setup](https://support.apple.com/en-us/111107). Apple's [website terms](https://www.apple.com/legal/internet-services/terms/site.html) restrict copying and redistribution of its content, so its original pages are not included here.
+
+Source pages can change. Review and replace the saved FTC originals and Apple-based summaries when needed; keep each source URL and review date accurate. If retrieval finds no relevant source, the application should say so instead of inventing one.
