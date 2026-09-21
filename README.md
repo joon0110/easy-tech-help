@@ -16,12 +16,12 @@ My grandmother lives alone, and helping with confusing phone messages remotely c
 | English labeled text examples and SFT export | 200 examples: 120 synthetic + 80 redacted public SMS; source/coverage/leakage/token checks |
 | Local reference corpus and chunk retrieval | Implemented; 6 FTC originals + 4 Apple-based summaries, sentence-aware chunks and BM25 |
 | RAG-connected explanation and source display | Implemented in Streamlit and CLI; retrieved excerpts, catalog URLs and explicit abstention |
-| Risk assessment and safe next-action rules | Planned; observation validation is not a complete safety policy |
+| Cautions and code-controlled next actions | Implemented: fixed action catalog, local support checks, prohibited-action exclusion and uncertainty fallback |
 | Family handoff summary | Planned |
 | PyTorch training and inference | Implemented: Qwen2.5 1.5B + PEFT LoRA on MPS/CPU |
 | Baseline evaluation and fine-tuning comparison | Completed; [current results](results/improvement.md) and [first-run history](results/README.md); signal errors remain |
 
-The current app shows **reviewed observations and model-selected source passages**, with surrounding context and official links. Explanations are extractive: the application copies a selected source passage rather than displaying a free-form model paraphrase. Narrow application rules correct contextless help requests and explicit password requests mislabeled as payments; the raw prediction and adjustments remain in the RAG trace. Action safety rules and family handoff are not implemented yet. Input is not automatically saved or added to training data. Raw adapter observation matches remain 20/34 development and 23/34 regression; public-SMS extraction remains weak. See the [grounding and classification improvements](results/rag_improvement.md), [analysis results](results/improvement.md), and historical [initial RAG results](results/rag.md).
+The current app shows **reviewed observations, cautions, next steps, actions to avoid and official sources**. Model-selected reference text is extractive and receives an additional display check. All next steps come from fixed application templates, with local supporting evidence checked before use. Raw predictions and application corrections remain in diagnostic traces. Family handoff is not implemented yet. Input is not automatically saved or added to training data. Raw adapter observation matches remain 20/34 development and 23/34 regression; public-SMS extraction remains weak. See [stage 5 safety results](results/safety.md), [grounding improvements](results/rag_improvement.md) and [analysis results](results/improvement.md).
 
 ## Intended V1 flow
 
@@ -64,6 +64,8 @@ streamlit run app/app.py
 CLI alternatives:
 
 ```bash
+python -m easy_tech_help.guidance --text 'Text message: Send your verification code.'
+python -m easy_tech_help.guidance --file examples/message.txt
 python -m easy_tech_help.rag --text 'My iPhone is connected to Wi-Fi but says No Internet Connection.'
 python -m easy_tech_help.rag --file examples/message.txt
 python -m easy_tech_help.analysis --text 'Text message: Reply with your verification code.'
@@ -73,6 +75,8 @@ python -m easy_tech_help.runtime --base --text 'Reply with your verification cod
 ```
 
 The model is [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct). Generation uses local files in the Python process and needs no hosted-model API key. Set `--device cpu` when MPS is unavailable; CPU execution is slower. `.env.example` documents optional model/adapter directories and the device. An old `EASY_TECH_HELP_LOCAL_MODEL=qwen3:4b` setting must be removed or changed to `artifacts/pytorch-model`. The app requires a completed adapter and will not silently substitute the base model.
+
+`guidance` is the product CLI with the safety policy. `rag`, `analysis` and `runtime` are diagnostic entrypoints; they do not choose approved next actions. Guidance JSON includes the filtered product explanation and raw analysis for debugging. Only the filtered view belongs in a product interface.
 
 The former positional image-path CLI and `analyze_screenshot()` have been replaced with `--text` / `--file` and `analyze_text()`. Image parsing, image request payloads, image tests and the direct Pillow dependency were removed. Streamlit may still install Pillow as its own dependency.
 
@@ -111,7 +115,7 @@ Compare the same base and current adapter on the existing regression split (this
 python -m easy_tech_help.evaluation --device mps --split test --output results/pytorch_v2_regression.json
 ```
 
-The evaluator records raw generations, invalid outputs, category accuracy, signal precision/recall, observation matches, ordinary-control extra signals, latency and separate synthetic/public results. These are analysis metrics; they do not measure RAG or the unfinished safety-action pipeline.
+The evaluator records raw generations, invalid outputs, category accuracy, signal precision/recall, observation matches, ordinary-control extra signals, latency and separate synthetic/public results. These are analysis metrics; the RAG and safety development checks run separately.
 
 ## References and retrieval
 
@@ -127,7 +131,7 @@ The evaluator records raw generations, invalid outputs, category accuracy, signa
 
 Unknown analysis, no matching evidence, model abstention, invalid source IDs, incomplete generation and runtime/file failures produce explicit messages. A failed draft is not displayed as an answer. The CLI includes raw output for debugging; the app shows only accepted explanations and source excerpts. Training examples and user input are never added to the trusted corpus automatically.
 
-**Exact quotation prevents new claims being added to the explanation; it does not prove relevance or safety.** A selected passage can still be poorly matched, and a general reference cannot verify this sender, this network or the cause of this problem. Some official passages contain troubleshooting steps, but these quotations are not personalized, safety-approved actions. A reviewed application action policy remains the next stage. The wording is less conversational than free-form generation; that is the current grounding tradeoff.
+**Exact quotation prevents new claims being added to the explanation; it does not prove relevance or safety.** A selected passage can still be poorly matched, and a general reference cannot verify this sender, this network or the cause of this problem. Next steps are selected separately by the application policy below. High-impact procedural passages and broad network-safety assurances are hidden from the product explanation panel; official source links remain available. The wording is less conversational than free-form generation; that is the current grounding tradeoff.
 
 Run the real local RAG development checks (eight assistant-authored inputs, not an independent accuracy benchmark):
 
@@ -137,6 +141,24 @@ python -m easy_tech_help.review_evaluation
 ```
 
 The RAG report preserves raw and reviewed observations, correction reasons, retrieved excerpts, selected quotes, raw model output, timings and source/code/adapter fingerprints. `review_evaluation` separately replays the corrections on 68 recorded predictions; it does not run or retrain a model. See [reviewed results and limits](results/rag_improvement.md).
+
+## Stage 5: safety guidance
+
+`guidance.py` runs RAG and then `safety.py`. The policy selects from **11 fixed actions**, including independent verification, closing an unfamiliar browser popup through browser controls, checking Wi-Fi settings, comparing connectivity on a known network, and asking for more context. It supplies cautions and actions to avoid. It does not issue a definitive scam verdict or certify that a sender/network is safe.
+
+Specific actions are bound to a reviewed document ID and literal support span. The application reads the local document, verifies that span and checks its official URL before displaying the action. This deterministic evidence lookup is separate from the model's explanatory retrieval, so a failed explanation can still have independently supported actions. Missing/changed evidence falls back to pause/clarification, without invented citations. Generic fallback actions are labeled `policy_only` in the trace.
+
+User text and generated prose never become action text. Twelve prohibited action types—including paying the requester, sharing secrets, following message links/numbers, granting remote access, installing from a popup, joining unknown networks, disabling security and resetting/erasing settings—are absent from the allowed catalog and rejected by the resolver. Reference passages mentioning high-impact operations are withheld from the product panel, and full unreviewed passages are not expanded in the app. Input evidence remains explicitly quoted as user text.
+
+Conservative input guards supplement missed password/code/payment/remote-access signals. Negated, historical and educational contexts, receipts, and network-password distinctions have explicit controls. These English heuristics can still miss paraphrases or flag ambiguous requests. A Wi-Fi issue uses a connection-check level; a normal message receives no special action and no safety guarantee. Airplane Mode is checked without automatically turning it off, and network resets are never suggested in this version.
+
+Run the real product development evaluation:
+
+```bash
+python -m easy_tech_help.safety_evaluation --device mps --output results/safety_development.json
+```
+
+The twelve assistant-authored cases include the eight existing RAG inputs plus remote-access, prompt-injection/payment, negated-password and receipt controls. This is development evidence, not a real-world safety certification. [Results, policy decisions and remaining limits](results/safety.md).
 
 ## Validation and limits
 
@@ -154,7 +176,7 @@ EASY_TECH_HELP_RUN_LIVE_TESTS=1 python -m pytest tests/test_analysis_live.py -v 
 
 Inputs are limited to 4,000 characters. Pydantic rejects unknown fields, unsupported categories, duplicate signals, incompatible connection states, and evidence absent from the original input. Invalid or unfinished generations become `unknown`; runtime failures are reported explicitly. Application templates supply the displayed summary and uncertainty text.
 
-Exact quotation proves only that words occurred in the input. It does not prove that a signal interpretation, sender claim, or network status is true. Prompt instructions are not a security guarantee. Future safety rules must account for false alarms, missed scams, uncertain context and unsafe actions. Remove passwords, verification codes and personal details before pasting text.
+Exact quotation proves only that words occurred in the input. It does not prove that a signal interpretation, sender claim, or network status is true. The action allowlist restricts what the product can suggest; it cannot ensure correct risk detection or source relevance. Independent evaluation must cover false alarms, missed scams and uncertain context. Remove passwords, verification codes and personal details before pasting text.
 
 Active evaluation data lives in [data/text/validation.jsonl](data/text/validation.jsonl) for development and [data/text/test.jsonl](data/text/test.jsonl) for regression checks after its initial evaluation. The preparation report captures data checks before training; training manifests and evaluation results are separate. Normal controls are necessary to measure false alarms, and unseen independently reviewed recent messages remain necessary for a stronger evaluation.
 
@@ -162,9 +184,9 @@ Active evaluation data lives in [data/text/validation.jsonl](data/text/validatio
 
 | Order | Work | Difficulty (1–5) |
 | --- | --- | ---: |
-| 1 | Implement code-enforced safe guidance; independently evaluate retrieval relevance and analysis errors | 5 |
-| 2 | Build family handoff and finish the readable product interface | 3 |
-| 3 | Add independent contemporary cases and evaluate the complete guidance pipeline | 4 |
-| 4 | Publish demo/results/limits | 3 |
+| 1 | Build family handoff from the reviewed guidance result | 3 |
+| 2 | Finish and usability-test the readable product interface | 3 |
+| 3 | Add independent contemporary cases and evaluate the complete guidance pipeline; improve training from reviewed failures | 5 |
+| 4 | Publish demo/results/limits | 2 |
 
 Architecture and implementation boundaries: [docs/architecture.md](docs/architecture.md).

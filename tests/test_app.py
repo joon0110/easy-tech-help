@@ -4,7 +4,7 @@ from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
-from easy_tech_help import analysis, rag
+from easy_tech_help import analysis, guidance
 from easy_tech_help.rag import Citation, RagResult, retrieve_references
 from easy_tech_help.schemas import TextObservation
 
@@ -14,7 +14,7 @@ APP = Path(__file__).resolve().parents[1] / "app" / "app.py"
 def test_form_submits_text_and_shows_validated_result(monkeypatch):
     calls = []
 
-    def fake_analyze(text, *, model):
+    def fake_analyze(text, *, model, **kwargs):
         calls.append((text, model))
         observation = TextObservation.model_validate(
             {
@@ -35,15 +35,15 @@ def test_form_submits_text_and_shows_validated_result(monkeypatch):
             retrieved=[reference],
         )
 
-    monkeypatch.setattr(rag, "explain_text", fake_analyze)
+    monkeypatch.setattr(guidance, "explain_text", fake_analyze)
     app = AppTest.from_file(str(APP)).run()
     app.text_area[0].input("Message: https://notice.example").run()
     app.button[0].click().run()
     assert not app.exception
     assert calls[0][0] == "Message: https://notice.example"
     assert "https://notice.example" in [t.value for t in app.text]
-    assert app.text[0].value == app.text[1].value
-    assert any("What the reference says" == s.value for s in app.subheader)
+    assert any("Next steps" == s.value for s in app.subheader)
+    assert any("route you open yourself" in t.value for t in app.text)
     assert app.get("link_button")[0].proto.url.startswith("https://consumer.ftc.gov/")
     assert len(app.json) == 1
 
@@ -52,7 +52,7 @@ def test_model_failure_is_displayed_without_app_crash(monkeypatch):
     def fail(*args, **kwargs):
         raise analysis.LocalModelError("Local PyTorch adapter is missing")
 
-    monkeypatch.setattr(rag, "explain_text", fail)
+    monkeypatch.setattr(guidance, "explain_text", fail)
     app = AppTest.from_file(str(APP)).run()
     app.text_area[0].input("iPhone Wi-Fi is off.").run()
     app.button[0].click().run()
@@ -64,7 +64,7 @@ def test_model_failure_is_displayed_without_app_crash(monkeypatch):
 def test_no_source_is_explicit_and_does_not_display_a_generated_answer(monkeypatch):
     observation = TextObservation(category="message", signals=[], issues=[])
     monkeypatch.setattr(
-        rag,
+        guidance,
         "explain_text",
         lambda *a, **k: RagResult(observation, "insufficient_evidence"),
     )
@@ -80,7 +80,7 @@ def test_apple_summary_is_labeled_as_summary(monkeypatch):
     observation = TextObservation(category="wifi", signals=[], issues=[])
     reference = retrieve_references("iPhone Wi-Fi off", observation)[0]
     monkeypatch.setattr(
-        rag,
+        guidance,
         "explain_text",
         lambda *a, **k: RagResult(
             observation,
@@ -105,7 +105,7 @@ def test_failed_generation_can_show_multiple_chunks_from_same_document(monkeypat
     )
     assert len({r.document_id for r in references}) < len(references)
     monkeypatch.setattr(
-        rag,
+        guidance,
         "explain_text",
         lambda *a, **k: RagResult(
             observation,
@@ -118,5 +118,53 @@ def test_failed_generation_can_show_multiple_chunks_from_same_document(monkeypat
     app.text_area[0].input("iPhone connected Wi-Fi no internet").run()
     app.button[0].click().run()
     assert not app.exception
-    assert len(app.get("link_button")) == sum(len(r.urls) for r in references)
+    assert len(app.get("link_button")) == len(
+        {url for r in references for url in r.urls}
+    )
     assert all("Untrusted hidden draft" not in t.value for t in app.text)
+
+
+def test_source_reset_instruction_is_not_exposed_in_product_panels(monkeypatch):
+    text = "iPhone Wi-Fi network reset"
+    observation = TextObservation(category="wifi", signals=[], issues=[])
+    refs = retrieve_references(text, observation)
+    ref = next(r for r in refs if "Reset Network Settings" in r.excerpt)
+    monkeypatch.setattr(
+        guidance,
+        "explain_text",
+        lambda *a, **k: RagResult(
+            observation,
+            "answered",
+            explanation=ref.excerpt,
+            citations=[Citation(ref, ref.excerpt)],
+            retrieved=refs,
+        ),
+    )
+    app = AppTest.from_file(str(APP)).run()
+    app.text_area[0].input(text).run()
+    app.button[0].click().run()
+    assert not app.exception
+    assert all(ref.excerpt not in t.value for t in app.text)
+    assert any("Do not reset" in t.value for t in app.text)
+    assert any("Open Settings > Wi-Fi" in t.value for t in app.text)
+
+
+def test_sensitive_request_shows_attention_next_steps_and_avoid_actions(monkeypatch):
+    text = "Enter your password."
+    monkeypatch.setattr(
+        guidance,
+        "explain_text",
+        lambda *a, **k: RagResult(
+            TextObservation(category="message", signals=[], issues=[]),
+            "insufficient_evidence",
+        ),
+    )
+    app = AppTest.from_file(str(APP)).run()
+    app.text_area[0].input(text).run()
+    app.button[0].click().run()
+    assert not app.exception
+    assert app.warning
+    assert {"Next steps", "What to avoid", "References"}.issubset(
+        {h.value for h in app.subheader}
+    )
+    assert any("Do not share account passwords" in t.value for t in app.text)

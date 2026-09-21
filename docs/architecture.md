@@ -15,7 +15,8 @@ Streamlit text area / CLI --text or --file
   -> same Qwen base model with extraction adapter temporarily disabled
   -> generated selection of one numbered source unit (or abstention)
   -> validated IDs, literal explanation and official URL resolved from the corpus
-  -> template summary, uncertainty, explanation and sources (or explicit abstention)
+  -> deterministic safety policy and independently checked action support
+  -> summary, cautions, allowed next steps, avoid actions and sources
 ```
 
 `analysis.py` lazily caches a `LocalRuntime`. Transformers and PEFT load local files only; inference needs no model server or API key. Runtime checks the completed training manifest, model revision and prompt fingerprint before loading the adapter. It does not silently substitute the base model. The model has no tools and cannot browse, follow links or operate a phone. The app does not save inputs.
@@ -39,7 +40,7 @@ Original query terms have weight 1.0 in chunk scoring; added signal terms have w
 
 The fine-tuned adapter was trained for extraction JSON. `generate_grounded()` temporarily disables it using PEFT's context manager while reusing the loaded base weights for source selection. A runtime lock serializes extraction and selection so concurrent sessions cannot observe the wrong adapter state. The context manager restores the adapter on errors. Source selection is greedy, with repetition penalty 1.1 and a 384-token cap; observation extraction retains penalty 1.0 and 256 tokens. Both share a 4,096-token context budget and fail explicitly rather than truncating input silently.
 
-Free-form explanation output was replaced by an extractive contract after observed unsupported paraphrases. The model returns `source_id`, one strict integer `sentence_id`, and strict boolean `insufficient_evidence`. It receives numbered literal source units instead of an instruction to rewrite source text. Units retain complete sentences; immediate dependent continuations and an adjacent past/present contrast stay together (at most 120 words). Units are ranked by original-input term overlap, with generic terms weighted 0.2 and other terms 1.0. The highest-ranked usable candidate supplies the units. The application resolves the selected unit verbatim and rejects invented IDs, arrays/booleans as IDs, extra prose, inconsistent abstention and malformed output. An enclosing JSON markdown fence is tolerated. The UI labels the result "What the reference says" and offers the surrounding passage. Source URLs are resolved from the catalog and Apple summaries remain labeled. Raw selection output is recorded in CLI/development traces, never rendered as the explanation.
+Free-form explanation output was replaced by an extractive contract after observed unsupported paraphrases. The model returns `source_id`, one strict integer `sentence_id`, and strict boolean `insufficient_evidence`. It receives numbered literal source units instead of an instruction to rewrite source text. Units retain complete sentences; immediate dependent continuations and an adjacent past/present contrast stay together (at most 120 words). Units are ranked by original-input term overlap, with generic terms weighted 0.2 and other terms 1.0. The highest-ranked usable candidate supplies the units. The application resolves the selected unit verbatim and rejects invented IDs, arrays/booleans as IDs, extra prose, inconsistent abstention and malformed output. An enclosing JSON markdown fence is tolerated. The product applies the stage 5 display guard before showing "What the reference says"; surrounding passages remain in diagnostic traces, while official links are available in the UI. Source URLs are resolved from the catalog and Apple summaries remain labeled. Raw selection output is recorded in CLI/development traces, never rendered as the explanation.
 
 This is extractive RAG, not successful verification of arbitrary generated paraphrases. Every displayed explanation is copied from the selected source; relevance, context and source accuracy still need independent review. General source instructions are not personalized approved actions. Unknown analysis, missing/unreadable evidence, explicit abstention, incomplete output, invalid IDs and runtime failures remain distinct states. Related references can be inspected after a failure. User messages and training data never enter the trusted corpus automatically.
 
@@ -49,7 +50,21 @@ This is extractive RAG, not successful verification of arbitrary generated parap
 
 `analysis.analyze_text()` and `rag.explain_text()` apply these rules. `LocalRuntime.analyze()`, the training validator and raw model evaluator remain unchanged; raw training metrics are not inflated by application rules. RAG traces preserve `raw_observation`, the reviewed `observation`, and `analysis_adjustments`. Rules are conservative English heuristics, not a complete semantic classifier or a replacement for better training data.
 
-The remaining action policy needs reviewed action IDs/templates, uncertainty handling, and tests for both missed concerning requests and false alarms. A Wi-Fi problem alone is not a scam. Network resets need consequence-aware handling. Family summaries must exclude private credentials and unnecessary personal details.
+## Stage 5 action policy
+
+`guidance.py` is the product API/CLI and wraps `explain_text()` with `safety.build_guidance()`. The original RAG/extraction entrypoints remain diagnostic. Training, model weights and model prompts are unchanged by this stage.
+
+`safety.py` keeps frozen action templates in a read-only catalog. The policy emits one of `attention`, `check_source`, `connection_check`, `no_specific_warning` or `uncertain`; none is a certified scam/safe verdict. Sensitive account/payment/remote requests take priority over connectivity checks. Unknown analysis requests context; explicit sensitive input cues can still cause a pause when model output is unknown. Network-password and receipt controls prevent two obvious semantic misclassifications. Clause-local negation and historical/educational checks reduce false alarms, while regex guards catch several explicit requests missed by the model. These are conservative heuristics, not a complete semantic parser.
+
+The policy selects action IDs, never model prose. `resolve_actions()` rejects unknown/prohibited IDs, reads the bound local reference, verifies an exact support span and the official URL allowlist, and returns the fixed text plus `ActionEvidence`. The bindings were reviewed during implementation. They are deterministic source lookups, not the same excerpt selected by the explanatory model. Missing or modified support causes a pause/clarification fallback. `pause`, `clarify` and `no_change` are explicit application fallbacks with no external citation; their trace status is `policy_only`.
+
+Allowed Wi-Fi actions check current state, compare another device on the same known network, or obtain a known network's password from its owner for use in Settings. Airplane Mode changes require understanding whether the state is intentional. The policy does not reset/forget networks, erase the device, disable security, join unknown networks, forward credentials, pay a requester, use message links/numbers, or grant remote access. There is no phone automation; all actions are instructions for the user to consider.
+
+`displayable_reference()` checks that the explanation still equals literal retrieved citations and hides passages mentioning high-impact operations or broad public-network safety assurances. The app offers source titles and links instead of full unreviewed procedural passages. This additional conservative display filter can suppress helpful quotes too; the fixed action catalog is the enforcement boundary, not this word filter. Diagnostic JSON retains raw source/model data for inspection and must not be used directly as a product action panel.
+
+`safety_evaluation.py` runs twelve local-model development cases through analysis, RAG and policy. It checks decision levels, appropriate actions, template identity, prohibited-action exclusion and literal source support. Unit tests cover missing/altered sources, normal/negated/historical cases, all prohibited IDs and injection through input/model/source content. These checks constrain output behavior; independent real-world classification, relevance and usability evaluation is still necessary. See [stage 5 results](../results/safety.md).
+
+Family summaries remain a later step and must use only the reviewed result, excluding private credentials and unnecessary personal details.
 
 ## Data and provenance
 
@@ -103,7 +118,7 @@ Keep test failures for reporting; do not tune on them and continue calling them 
 
 | File / directory | Responsibility |
 | --- | --- |
-| `app/app.py` | Text input, observations, explanations, labeled sources and explicit errors |
+| `app/app.py` | Text input, observations, cautions, next/avoid actions, filtered references and explicit errors |
 | `analysis.py`, `config.py` | Shared prompt, app/CLI integration and local settings |
 | `runtime.py` | Local base/adapter loading and PyTorch generation |
 | `schemas.py` | Input and observation validation |
@@ -114,7 +129,8 @@ Keep test failures for reporting; do not tune on them and continue calling them 
 | `data/text/`, `data/sources/` | Labeled examples, provenance and licensing |
 | `retrieval.py`, `knowledge/` | Local corpus, literal chunks and BM25 search |
 | `rag.py`, `rag_evaluation.py` | Retrieval-augmented explanations, citation validation and development checks |
+| `safety.py`, `guidance.py`, `safety_evaluation.py` | Fixed action policy, source checks, product API/CLI and product development evaluation |
 | `results/` | Training metadata and measured evaluation results |
 | `artifacts/` | Ignored downloads, SFT exports and model weights |
 
-Action safety rules and family handoff remain to be implemented. RAG generation is connected, but semantic grounding and analysis quality still need improvement and independent evaluation.
+The initial action safety policy is implemented. Family handoff, independent evaluation and further usability work remain; model recall and semantic relevance still need improvement.
