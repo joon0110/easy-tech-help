@@ -4,8 +4,10 @@ import argparse
 import hashlib
 import json
 import time
+from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
+from threading import RLock
 
 from easy_tech_help.analysis import build_messages
 from easy_tech_help.dataset import TOKENIZER_ID, TOKENIZER_REVISION
@@ -76,6 +78,7 @@ class LocalRuntime:
         runtime.model = model
         runtime.tokenizer = tokenizer
         runtime.device = device
+        runtime._lock = RLock()
         return runtime
 
     def __init__(
@@ -84,6 +87,7 @@ class LocalRuntime:
         adapter_dir: Path | None = ADAPTER_DIR,
         device: str = "auto",
     ):
+        self._lock = RLock()
         self.device = select_device(device)
         if adapter_dir is not None:
             manifest = json.loads((adapter_dir / "training_manifest.json").read_text())
@@ -108,6 +112,25 @@ class LocalRuntime:
         self.model.eval()
 
     def generate(self, messages: list[dict], max_new_tokens: int = 256) -> Generation:
+        with self._lock:
+            return self._generate(messages, max_new_tokens)
+
+    def generate_grounded(
+        self, messages: list[dict], max_new_tokens: int = 384
+    ) -> Generation:
+        """Use base instruction following; restore the analysis adapter even on error."""
+        with self._lock:
+            context = (
+                self.model.disable_adapter()
+                if hasattr(self.model, "disable_adapter")
+                else nullcontext()
+            )
+            with context:
+                return self._generate(messages, max_new_tokens, repetition_penalty=1.1)
+
+    def _generate(
+        self, messages: list[dict], max_new_tokens: int, repetition_penalty: float = 1.0
+    ) -> Generation:
         import torch
         from transformers import GenerationConfig
 
@@ -122,8 +145,10 @@ class LocalRuntime:
             raise ValueError("Text exceeds the local context budget; shorten it")
         eos = self.model.generation_config.eos_token_id
         stop_ids = eos if isinstance(eos, list) else [eos]
+        options = generation_settings(max_new_tokens)
+        options["repetition_penalty"] = repetition_penalty
         settings = GenerationConfig(
-            **generation_settings(max_new_tokens),
+            **options,
             eos_token_id=eos,
             pad_token_id=self.tokenizer.pad_token_id,
         )

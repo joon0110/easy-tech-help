@@ -14,14 +14,14 @@ My grandmother lives alone, and helping with confusing phone messages remotely c
 | Text input in Streamlit and CLI | Implemented |
 | Local text model → validated category, signals, quoted evidence | Implemented |
 | English labeled text examples and SFT export | 200 examples: 120 synthetic + 80 redacted public SMS; source/coverage/leakage/token checks |
-| Local reference corpus and keyword retrieval | Implemented separately; 6 FTC originals + 4 Apple-based summaries |
-| RAG-connected explanation and source display | Next implementation stage |
+| Local reference corpus and chunk retrieval | Implemented; 6 FTC originals + 4 Apple-based summaries, sentence-aware chunks and BM25 |
+| RAG-connected explanation and source display | Implemented in Streamlit and CLI; retrieved excerpts, catalog URLs and explicit abstention |
 | Risk assessment and safe next-action rules | Planned; observation validation is not a complete safety policy |
 | Family handoff summary | Planned |
 | PyTorch training and inference | Implemented: Qwen2.5 1.5B + PEFT LoRA on MPS/CPU |
 | Baseline evaluation and fine-tuning comparison | Completed; [current results](results/improvement.md) and [first-run history](results/README.md); signal errors remain |
 
-The current app shows **observations only**, not scam verdicts or next-step advice. It does not automatically save user input or add it to training data. The improved adapter matches 20/34 development observations and 23/34 existing regression examples, compared with 17/34 on each before the fixes. Public-SMS signal extraction remains weak; the model is not ready for reliable user guidance. See the [current results and remaining errors](results/improvement.md); the [first-run report](results/README.md) is historical.
+The current app shows **observations and a generated reference-based explanation**, with the source excerpt and official link. Action safety rules and family handoff are not implemented yet. It does not automatically save user input or add it to training data. The improved adapter matches 20/34 development observations and 23/34 existing regression examples, compared with 17/34 on each before the fixes. Public-SMS signal extraction remains weak; the model is not ready for reliable user guidance. See the [analysis results and remaining errors](results/improvement.md), [RAG development checks](results/rag.md), and historical [first-run report](results/README.md).
 
 ## Intended V1 flow
 
@@ -64,6 +64,8 @@ streamlit run app/app.py
 CLI alternatives:
 
 ```bash
+python -m easy_tech_help.rag --text 'My iPhone is connected to Wi-Fi but says No Internet Connection.'
+python -m easy_tech_help.rag --file examples/message.txt
 python -m easy_tech_help.analysis --text 'Text message: Reply with your verification code.'
 python -m easy_tech_help.analysis --file examples/message.txt
 python -m easy_tech_help.analysis --text 'iPhone Wi-Fi is off.'
@@ -109,13 +111,31 @@ Compare the same base and current adapter on the existing regression split (this
 python -m easy_tech_help.evaluation --device mps --split test --output results/pytorch_v2_regression.json
 ```
 
-The evaluator records raw generations, invalid outputs, category accuracy, signal precision/recall, observation matches, ordinary-control extra signals, latency and separate synthetic/public results. These are analysis metrics; they do not measure the unfinished RAG or safety-action pipeline.
+The evaluator records raw generations, invalid outputs, category accuracy, signal precision/recall, observation matches, ordinary-control extra signals, latency and separate synthetic/public results. These are analysis metrics; they do not measure RAG or the unfinished safety-action pipeline.
 
 ## References and retrieval
 
-[knowledge/README.md](knowledge/README.md) describes the six original FTC HTML pages, four clearly labeled Apple-based summaries, and source URLs. `retrieval.py` searches local article text using weighted English keyword overlap. It does not fetch a source link at runtime, use a vector database, or yet feed retrieved documents to a generative model.
+[knowledge/README.md](knowledge/README.md) describes the six original FTC HTML pages, four clearly labeled Apple-based summaries, and source URLs. The app reads these local files; it does not fetch their links at runtime. No vector database, embeddings service, new model download or API key is required.
 
-Connecting RAG is the next step. It must map analysis category `alert` to the existing knowledge category `popup` and turn validated signals into useful English search queries. A missing source must remain explicit. Training examples are not RAG evidence, and user input must never be added to the trusted corpus automatically.
+`rag.py` now connects the full explanation path:
+
+1. Analyze the text with the existing PyTorch LoRA adapter and validate its observations.
+2. Map `alert` to corpus category `popup`; combine the input with English terms for observed signals.
+3. Filter documents using weighted title/tag/body keywords. Group adjacent short paragraphs to retain context, split at sentence boundaries (target 75 words, preserving longer sentences), then rank excerpts with BM25 plus a small document-score contribution. Retrieve at most three candidates, at most two per document.
+4. Give the highest-ranked excerpt to the same loaded Qwen base model with the extraction adapter temporarily disabled. It generates a short explanation and cites that source or abstains. Using one excerpt limits mixing facts from multiple sources while citing only one. Explanation generation uses repetition penalty 1.1; extraction keeps 1.0. No weights are changed.
+5. Validate the response structure and source ID. Resolve the displayed excerpt and official URL from the retrieved corpus, never from model-generated links. Apple summaries are explicitly labeled as summaries.
+
+Unknown analysis, no matching evidence, model abstention, invalid source IDs, incomplete generation and runtime/file failures produce explicit messages. A failed draft is not displayed as an answer. The CLI includes raw output for debugging; the app shows only accepted explanations and source excerpts. Training examples and user input are never added to the trusted corpus automatically.
+
+**Citation validation proves provenance, not factual entailment.** A valid source ID does not guarantee every generated claim is supported, and a relevant document does not establish a sender's identity or the cause of a Wi-Fi problem. The prompt asks for explanations without action steps; this is not a code-enforced action policy. That policy is the next stage.
+
+Run the real local RAG development checks (eight assistant-authored inputs, not an independent accuracy benchmark):
+
+```bash
+python -m easy_tech_help.rag_evaluation --device mps --output results/rag_development.json
+```
+
+The report preserves input, analysis, retrieved excerpts, chosen citations, raw generated text, timings and source/code/adapter fingerprints. See [reviewed results and limits](results/rag.md).
 
 ## Validation and limits
 
@@ -141,7 +161,7 @@ Active evaluation data lives in [data/text/validation.jsonl](data/text/validatio
 
 | Order | Work | Difficulty (1–5) |
 | --- | --- | ---: |
-| 1 | Connect local RAG and code-enforced safe guidance | 5 |
+| 1 | Improve grounding using the RAG results, then implement code-enforced safe guidance | 5 |
 | 2 | Build family handoff and finish the readable product interface | 3 |
 | 3 | Add independent contemporary cases and evaluate the complete guidance pipeline | 4 |
 | 4 | Publish demo/results/limits | 3 |

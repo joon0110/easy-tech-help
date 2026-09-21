@@ -1,9 +1,13 @@
 """Small, offline document retrieval for the V1 RAG corpus."""
 
+import hashlib
 import json
+import math
 import re
+from collections import Counter
 from dataclasses import dataclass
 from html.parser import HTMLParser
+from itertools import pairwise
 from pathlib import Path
 
 DEFAULT_KNOWLEDGE_DIR = Path(__file__).resolve().parents[2] / "knowledge"
@@ -71,8 +75,12 @@ class _FtcArticleParser(HTMLParser):
             "svg",
         }:
             self.skip_tag = tag
+        if self.body_depth is not None and tag in {"p", "li", "h2", "h3", "br"}:
+            self.parts.append("\n\n")
 
     def handle_endtag(self, tag: str) -> None:
+        if self.body_depth is not None and tag in {"p", "li", "h2", "h3"}:
+            self.parts.append("\n\n")
         if tag == self.skip_tag:
             self.skip_tag = None
         if tag == "div":
@@ -94,7 +102,11 @@ def _read_article(path: Path) -> str:
         raise ValueError(f"Unsupported source format: {path.name}")
     parser = _FtcArticleParser()
     parser.feed(path.read_text(encoding="utf-8"))
-    text = " ".join(" ".join(parser.parts).split())
+    text = "\n\n".join(
+        " ".join(part.split())
+        for part in " ".join(parser.parts).split("\n\n")
+        if part.strip()
+    )
     if not text:
         raise ValueError(f"Article body not found: {path.name}")
     return text
@@ -167,3 +179,182 @@ def search_documents(
             hits.append(SearchHit(document=document, score=score))
 
     return sorted(hits, key=lambda hit: (-hit.score, hit.document.id))[:limit]
+
+
+@dataclass(frozen=True)
+class KnowledgeChunk:
+    id: str
+    document: KnowledgeDocument
+    text: str
+
+
+@dataclass(frozen=True)
+class ChunkHit:
+    chunk: KnowledgeChunk
+    score: float
+
+
+def build_chunks(
+    documents: list[KnowledgeDocument], max_words: int = 75
+) -> list[KnowledgeChunk]:
+    """Literal paragraph excerpts split at sentence boundaries when possible.
+
+    A sentence longer than the budget remains intact: preserving a condition or
+    consequence is more useful than satisfying a hard word limit.
+    """
+    if max_words < 1:
+        raise ValueError("max_words must be positive")
+    chunks = []
+    for doc in documents:
+        ordinal = 0
+        # Group adjacent short paragraphs so headings and questions retain context.
+        # Final excerpts remain literal slices, including paragraph breaks.
+        paragraphs = doc.text.split("\n\n")
+        grouped = []
+        pending = []
+        for paragraph in paragraphs:
+            pending.append(paragraph)
+            if len(" ".join(pending).split()) >= 45 and paragraph.rstrip().endswith(
+                (".", "!", "?")
+            ):
+                grouped.append("\n\n".join(pending))
+                pending = []
+        if pending:
+            grouped.append("\n\n".join(pending))
+        for paragraph in grouped:
+            if len(paragraph.split()) < 5:
+                continue
+            # A simple English sentence boundary, including closing quotation marks.
+            boundaries = (
+                [0]
+                + [
+                    match.end()
+                    for match in re.finditer(r'[.!?]["”\x27]?\s+(?=[A-Z])', paragraph)
+                ]
+                + [len(paragraph)]
+            )
+            start, end = 0, 0
+            excerpts = []
+            for left, right in pairwise(boundaries):
+                if end > start and len(paragraph[start:right].split()) > max_words:
+                    excerpts.append(paragraph[start:end].strip())
+                    start = left
+                end = right
+            if end > start:
+                excerpts.append(paragraph[start:end].strip())
+            for excerpt in excerpts:
+                digest = hashlib.sha256(excerpt.encode()).hexdigest()[:10]
+                chunks.append(
+                    KnowledgeChunk(f"{doc.id}:{ordinal}:{digest}", doc, excerpt)
+                )
+                ordinal += 1
+    return chunks
+
+
+CHUNK_STOP_WORDS = STOP_WORDS | {
+    "i",
+    "my",
+    "me",
+    "you",
+    "your",
+    "it",
+    "its",
+    "this",
+    "that",
+    "these",
+    "those",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "can",
+    "could",
+    "would",
+    "should",
+    "will",
+    "have",
+    "has",
+    "had",
+    "with",
+    "from",
+    "at",
+    "by",
+    "as",
+    "but",
+    "if",
+    "then",
+    "do",
+    "does",
+    "did",
+    "about",
+    "into",
+    "says",
+    "say",
+    "saying",
+    "now",
+    "a",
+    "s",
+}
+
+
+def _chunk_terms(value: str) -> list[str]:
+    value = value.casefold().replace("wi-fi", "wifi").replace("pop-up", "popup")
+    # Small, transparent English plural normalization for this fixed corpus.
+    return [
+        w[:-1]
+        if len(w) > 4 and w.endswith("s") and not w.endswith(("ss", "us", "is"))
+        else w
+        for w in re.findall(r"[a-z0-9]+", value)
+        if w not in CHUNK_STOP_WORDS
+    ]
+
+
+def search_chunks(
+    query: str,
+    *,
+    category: str,
+    limit: int = 3,
+    directory: Path = DEFAULT_KNOWLEDGE_DIR,
+) -> list[ChunkHit]:
+    """Document relevance gate, then BM25 (k1=1.5, b=.75) over literal chunks."""
+    if limit < 1:
+        raise ValueError("limit must be positive")
+    candidates = search_documents(
+        query, category=category, limit=10, directory=directory
+    )
+    if not candidates:
+        return []
+    chunks = build_chunks([hit.document for hit in candidates])
+    counts = [Counter(_chunk_terms(chunk.text)) for chunk in chunks]
+    lengths = [sum(c.values()) for c in counts]
+    if not chunks or not sum(lengths):
+        return []
+    average = sum(lengths) / len(chunks)
+    query_terms = set(_chunk_terms(query))
+    specific = query_terms - GENERIC_TERMS
+    frequency = Counter(term for c in counts for term in c)
+    document_scores = {h.document.id: h.score for h in candidates}
+    scored = []
+    for chunk, count, length in zip(chunks, counts, lengths, strict=True):
+        if not specific.intersection(count):
+            continue
+        score = 0.0
+        for term in query_terms:
+            tf = count[term]
+            if tf:
+                idf = math.log(
+                    1 + (len(chunks) - frequency[term] + 0.5) / (frequency[term] + 0.5)
+                )
+                score += idf * tf * 2.5 / (tf + 1.5 * (0.25 + 0.75 * length / average))
+        score += 0.05 * document_scores[chunk.document.id]
+        scored.append(ChunkHit(chunk, round(score, 6)))
+    # Limit one document to two excerpts so another relevant source can appear.
+    result, per_doc = [], Counter()
+    for hit in sorted(scored, key=lambda h: (-h.score, h.chunk.id)):
+        if per_doc[hit.chunk.document.id] < 2:
+            result.append(hit)
+            per_doc[hit.chunk.document.id] += 1
+        if len(result) == limit:
+            break
+    return result

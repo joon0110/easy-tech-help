@@ -10,7 +10,11 @@ Streamlit text area / CLI --text or --file
   -> shared prompt + Qwen2.5-1.5B-Instruct + trained PEFT adapter
   -> completed JSON response
   -> TextObservation validated against the original input
-  -> template summary, uncertainty and quoted evidence
+  -> category-filtered local documents and BM25-ranked sentence chunks
+  -> same Qwen base model with extraction adapter temporarily disabled
+  -> short generated explanation + retrieved source ID
+  -> validated source ID, excerpt and official URL resolved from the corpus
+  -> template summary, uncertainty, explanation and sources (or explicit abstention)
 ```
 
 `analysis.py` lazily caches a `LocalRuntime`. Transformers and PEFT load local files only; inference needs no model server or API key. Runtime checks the completed training manifest, model revision and prompt fingerprint before loading the adapter. It does not silently substitute the base model. The model has no tools and cannot browse, follow links or operate a phone. The app does not save inputs.
@@ -28,7 +32,13 @@ Text -> validated observations
      -> optional family handoff from the approved result
 ```
 
-The independent retriever uses weighted keyword overlap on local documents. Connecting it requires mapping `alert` to knowledge category `popup`, creating useful queries from supported signals, validating citations and handling missing evidence. User messages and training examples are not trusted RAG documents. Retrieved text cannot override application safety rules.
+`rag.py` implements retrieval-augmented explanation. It maps `alert` to knowledge category `popup` and expands the original input with terms for observed signals. `retrieval.py` filters documents by category and weighted title/tag/body keywords, then ranks literal sentence-aware chunks with BM25 (k1=1.5, b=0.75) plus 0.05 times the document score. It groups adjacent short paragraphs and applies simple English plural normalization to search terms. Chunk IDs contain document ID, ordinal and content hash. The target size is 75 words; a longer sentence remains intact to retain conditions and consequences. At most three candidates are retrieved, at most two per document. Only the highest-ranked excerpt enters the explanation prompt: the small model mixed source facts when supplied with several excerpts but asked to cite only one. Other candidates remain in the trace and fallback reference display. The ten-document corpus is rebuilt in memory for each request; there is no persistent vector index or online fetch.
+
+The fine-tuned adapter was trained for extraction JSON, not explanatory prose. `generate_grounded()` temporarily disables it using PEFT's context manager while reusing the loaded base weights. A runtime lock serializes extraction and explanation so concurrent sessions cannot observe the wrong adapter state. The context manager restores the adapter on errors. Explanation generation is greedy, with repetition penalty 1.1 and a 384-token cap; extraction retains penalty 1.0 and 256 tokens. Both share a 4,096-token context budget and fail explicitly rather than truncating input silently.
+
+The explanation prompt includes three short demonstrations of source use and abstention, separate from training and evaluation data. The model returns an explanation of at most 400 characters, the provided source ID and a strict boolean abstention flag. Pydantic rejects extra fields and invalid shapes; a single enclosing JSON markdown fence is tolerated. A retrieved candidate that was not supplied to the model cannot be cited. Citations are resolved from retrieved chunks, including literal excerpts and allowlisted catalog URLs. Generated URLs are never used as source links. The UI renders input quotes and generated prose as plain text, and labels Apple-based summaries explicitly. Invalid/unknown analysis, no evidence, explicit abstention, unreadable corpus, incomplete output and generation failures are distinct states. Related references can be inspected after a generation failure without presenting them as support for a hidden answer.
+
+Citation checks prove that the displayed source was retrieved, not that it entails every generated claim. User messages and training examples are not trusted RAG documents. Prompt instructions are not an action-safety guarantee. The CLI and development reports include raw model output for inspection; the app does not display rejected drafts or log user inputs.
 
 The remaining action policy needs reviewed action IDs/templates, uncertainty handling, and tests for both missed concerning requests and false alarms. A Wi-Fi problem alone is not a scam. Network resets need consequence-aware handling. Family summaries must exclude private credentials and unnecessary personal details.
 
@@ -76,7 +86,7 @@ The table above describes initial training. The current default adapter is a thr
 
 Extraction disables the pinned model's default repetition penalty of 1.1 by explicitly setting 1.0. Repeated signal names, JSON keys and exact input quotes are expected in this task. In Transformers 5.17.0, unspecified generation fields inherit model defaults, so setting only `do_sample=False` does not remove this penalty. A tiny real PyTorch generation test verifies that the extraction settings preserve raw greedy token scores even when the model carries chat defaults. The first evaluation predates this fix; it remains a historical run, not a measurement of current inference settings.
 
-An observation match requires a valid response and correct category, signal set and issue set. Different literal evidence spans can match; quote validation does not establish semantic grounding. Extra-signal rate is not a scam false-positive rate. Full RAG relevance and action-safety metrics require the remaining pipeline.
+An observation match requires a valid response and correct category, signal set and issue set. Different literal evidence spans can match; quote validation does not establish semantic grounding. Extra-signal rate is not a scam false-positive rate. `rag_evaluation.py` separately runs eight assistant-authored development inputs through analysis, retrieval and generation, recording expected-document retrieval, expected statuses and citation provenance. The inputs were used during implementation; passing them is not a held-out accuracy result. See [RAG review](../results/rag.md). Independent relevance/faithfulness review and action-safety metrics remain necessary.
 
 Keep test failures for reporting; do not tune on them and continue calling them unseen. This small curated public/synthetic test is only an initial check. UCI texts may have appeared in base-model pretraining, and stronger evaluation needs independently reviewed contemporary messages. Final training metadata and evaluation outputs belong in `results/`; large local weights remain ignored under `artifacts/`.
 
@@ -84,7 +94,7 @@ Keep test failures for reporting; do not tune on them and continue calling them 
 
 | File / directory | Responsibility |
 | --- | --- |
-| `app/app.py` | Text input, observations, explicit errors |
+| `app/app.py` | Text input, observations, explanations, labeled sources and explicit errors |
 | `analysis.py`, `config.py` | Shared prompt, app/CLI integration and local settings |
 | `runtime.py` | Local base/adapter loading and PyTorch generation |
 | `schemas.py` | Input and observation validation |
@@ -92,8 +102,9 @@ Keep test failures for reporting; do not tune on them and continue calling them 
 | `training.py` | Completion-only LoRA training and validation selection |
 | `evaluation.py` | Matched base/adapter evaluation |
 | `data/text/`, `data/sources/` | Labeled examples, provenance and licensing |
-| `retrieval.py`, `knowledge/` | Independent local reference search and corpus |
+| `retrieval.py`, `knowledge/` | Local corpus, literal chunks and BM25 search |
+| `rag.py`, `rag_evaluation.py` | Retrieval-augmented explanations, citation validation and development checks |
 | `results/` | Training metadata and measured evaluation results |
 | `artifacts/` | Ignored downloads, SFT exports and model weights |
 
-RAG-connected generation, action safety rules and family handoff remain to be implemented.
+Action safety rules and family handoff remain to be implemented. RAG generation is connected, but semantic grounding and analysis quality still need improvement and independent evaluation.
