@@ -30,7 +30,7 @@ def test_form_submits_text_and_shows_validated_result(monkeypatch):
         return RagResult(
             observation,
             "answered",
-            explanation="The text contains a link. The source describes unexpected messages.",
+            explanation=reference.excerpt,
             citations=[Citation(reference, reference.excerpt)],
             retrieved=[reference],
         )
@@ -42,7 +42,8 @@ def test_form_submits_text_and_shows_validated_result(monkeypatch):
     assert not app.exception
     assert calls[0][0] == "Message: https://notice.example"
     assert "https://notice.example" in [t.value for t in app.text]
-    assert "The text contains a link." in app.text[0].value
+    assert app.text[0].value == app.text[1].value
+    assert any("What the reference says" == s.value for s in app.subheader)
     assert app.get("link_button")[0].proto.url.startswith("https://consumer.ftc.gov/")
     assert len(app.json) == 1
 

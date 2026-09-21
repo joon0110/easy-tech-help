@@ -21,7 +21,7 @@ My grandmother lives alone, and helping with confusing phone messages remotely c
 | PyTorch training and inference | Implemented: Qwen2.5 1.5B + PEFT LoRA on MPS/CPU |
 | Baseline evaluation and fine-tuning comparison | Completed; [current results](results/improvement.md) and [first-run history](results/README.md); signal errors remain |
 
-The current app shows **observations and a generated reference-based explanation**, with the source excerpt and official link. Action safety rules and family handoff are not implemented yet. It does not automatically save user input or add it to training data. The improved adapter matches 20/34 development observations and 23/34 existing regression examples, compared with 17/34 on each before the fixes. Public-SMS signal extraction remains weak; the model is not ready for reliable user guidance. See the [analysis results and remaining errors](results/improvement.md), [RAG development checks](results/rag.md), and historical [first-run report](results/README.md).
+The current app shows **reviewed observations and model-selected source passages**, with surrounding context and official links. Explanations are extractive: the application copies a selected source passage rather than displaying a free-form model paraphrase. Narrow application rules correct contextless help requests and explicit password requests mislabeled as payments; the raw prediction and adjustments remain in the RAG trace. Action safety rules and family handoff are not implemented yet. Input is not automatically saved or added to training data. Raw adapter observation matches remain 20/34 development and 23/34 regression; public-SMS extraction remains weak. See the [grounding and classification improvements](results/rag_improvement.md), [analysis results](results/improvement.md), and historical [initial RAG results](results/rag.md).
 
 ## Intended V1 flow
 
@@ -30,7 +30,7 @@ Pasted text / typed Wi-Fi status
   → local PyTorch text model with a trained LoRA adapter
   → validated category + signals + exact quotes from the input
   → retrieve relevant local FTC / Apple-based help documents
-  → generate an explanation grounded in those documents
+  → local model selects a source passage; code renders its exact words
   → application safety rules select allowed actions and reject unsafe guidance
   → explanation / cautions / next action / sources / optional family summary
 ```
@@ -119,23 +119,24 @@ The evaluator records raw generations, invalid outputs, category accuracy, signa
 
 `rag.py` now connects the full explanation path:
 
-1. Analyze the text with the existing PyTorch LoRA adapter and validate its observations.
-2. Map `alert` to corpus category `popup`; combine the input with English terms for observed signals.
+1. Analyze the text with the existing PyTorch LoRA adapter, validate its observations and apply narrow application corrections. The model, extraction prompt and training data are unchanged.
+2. Map `alert` to corpus category `popup`; use the original text for retrieval, with lower-weight English expansions for observed signals. Generic account messages do not select Apple Account material unless Apple or iCloud is mentioned.
 3. Filter documents using weighted title/tag/body keywords. Group adjacent short paragraphs to retain context, split at sentence boundaries (target 75 words, preserving longer sentences), then rank excerpts with BM25 plus a small document-score contribution. Retrieve at most three candidates, at most two per document.
-4. Give the highest-ranked excerpt to the same loaded Qwen base model with the extraction adapter temporarily disabled. It generates a short explanation and cites that source or abstains. Using one excerpt limits mixing facts from multiple sources while citing only one. Explanation generation uses repetition penalty 1.1; extraction keeps 1.0. No weights are changed.
-5. Validate the response structure and source ID. Resolve the displayed excerpt and official URL from the retrieved corpus, never from model-generated links. Apple summaries are explicitly labeled as summaries.
+4. Split the highest-ranked usable passage into complete sentences, retain dependent continuations and past/present contrasts, and rank these units against the original input. The same loaded Qwen base model, with the extraction adapter temporarily disabled, selects one numbered unit or abstains. Selection uses repetition penalty 1.1; observation extraction keeps 1.0.
+5. Validate the source ID and integer selection. Copy the entire selected unit verbatim; reject free-form additions, invented IDs and malformed selections. Official URLs come only from the catalog. Apple summaries are explicitly labeled as summaries.
 
 Unknown analysis, no matching evidence, model abstention, invalid source IDs, incomplete generation and runtime/file failures produce explicit messages. A failed draft is not displayed as an answer. The CLI includes raw output for debugging; the app shows only accepted explanations and source excerpts. Training examples and user input are never added to the trusted corpus automatically.
 
-**Citation validation proves provenance, not factual entailment.** A valid source ID does not guarantee every generated claim is supported, and a relevant document does not establish a sender's identity or the cause of a Wi-Fi problem. The prompt asks for explanations without action steps; this is not a code-enforced action policy. That policy is the next stage.
+**Exact quotation prevents new claims being added to the explanation; it does not prove relevance or safety.** A selected passage can still be poorly matched, and a general reference cannot verify this sender, this network or the cause of this problem. Some official passages contain troubleshooting steps, but these quotations are not personalized, safety-approved actions. A reviewed application action policy remains the next stage. The wording is less conversational than free-form generation; that is the current grounding tradeoff.
 
 Run the real local RAG development checks (eight assistant-authored inputs, not an independent accuracy benchmark):
 
 ```bash
-python -m easy_tech_help.rag_evaluation --device mps --output results/rag_development.json
+python -m easy_tech_help.rag_evaluation --device mps --output results/rag_improved.json
+python -m easy_tech_help.review_evaluation
 ```
 
-The report preserves input, analysis, retrieved excerpts, chosen citations, raw generated text, timings and source/code/adapter fingerprints. See [reviewed results and limits](results/rag.md).
+The RAG report preserves raw and reviewed observations, correction reasons, retrieved excerpts, selected quotes, raw model output, timings and source/code/adapter fingerprints. `review_evaluation` separately replays the corrections on 68 recorded predictions; it does not run or retrain a model. See [reviewed results and limits](results/rag_improvement.md).
 
 ## Validation and limits
 
@@ -161,7 +162,7 @@ Active evaluation data lives in [data/text/validation.jsonl](data/text/validatio
 
 | Order | Work | Difficulty (1–5) |
 | --- | --- | ---: |
-| 1 | Improve grounding using the RAG results, then implement code-enforced safe guidance | 5 |
+| 1 | Implement code-enforced safe guidance; independently evaluate retrieval relevance and analysis errors | 5 |
 | 2 | Build family handoff and finish the readable product interface | 3 |
 | 3 | Add independent contemporary cases and evaluate the complete guidance pipeline | 4 |
 | 4 | Publish demo/results/limits | 3 |

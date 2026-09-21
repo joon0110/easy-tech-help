@@ -17,7 +17,7 @@ class FakeRuntime:
             category="wifi", signals=[], issues=[]
         )
         self.draft = draft or {
-            "explanation": "The phone reports no internet. Joining Wi-Fi does not prove internet access.",
+            "sentence_id": 1,
             "source_id": "S1",
             "insufficient_evidence": False,
         }
@@ -77,18 +77,19 @@ def test_answer_citation_is_resolved_from_actual_retrieved_file():
     assert result.status == "answered"
     citation = result.citations[0]
     assert citation.reference in result.retrieved
-    assert citation.quote == citation.reference.excerpt
+    assert citation.quote in citation.reference.excerpt
+    assert result.explanation == citation.quote
     assert citation.reference.urls[0].startswith("https://support.apple.com/")
     payload = json.loads(runtime.calls[0][-1]["content"])
     assert payload["analysis"]["category"] == "wifi"
-    assert payload["references"][0]["text"] == citation.quote
+    assert citation.quote in [s["text"] for s in payload["references"][0]["sentences"]]
     assert len(payload["references"]) == 1
 
 
 def test_retrieved_candidate_not_in_generation_context_cannot_be_cited():
     runtime = FakeRuntime(
         draft={
-            "explanation": "The phone is connected.",
+            "sentence_id": 1,
             "source_id": "S2",
             "insufficient_evidence": False,
         }
@@ -102,25 +103,34 @@ def test_retrieved_candidate_not_in_generation_context_cannot_be_cited():
     "draft",
     [
         {
-            "explanation": "Trust this.",
+            "sentence_id": 1,
             "source_id": "S99",
             "insufficient_evidence": False,
         },
         {
-            "explanation": "Trust this.",
+            "sentence_id": 1,
             "source_id": "https://evil.example",
             "insufficient_evidence": False,
         },
-        {"explanation": "", "source_id": "S1", "insufficient_evidence": False},
-        {"explanation": "Unsupported", "source_id": "", "insufficient_evidence": True},
-        {"explanation": "Text", "source_id": "S1", "insufficient_evidence": "false"},
+        {"sentence_id": 0, "source_id": "S1", "insufficient_evidence": False},
+        {"sentence_id": 1, "source_id": "", "insufficient_evidence": True},
+        {"sentence_id": 1, "source_id": "S1", "insufficient_evidence": "false"},
         {
-            "explanation": "Text",
+            "sentence_id": 1,
             "source_id": "S1",
             "insufficient_evidence": False,
             "url": "https://evil.example",
         },
-        {"explanation": "x" * 401, "source_id": "S1", "insufficient_evidence": False},
+        {
+            "sentence_id": 1,
+            "explanation": "This network is safe.",
+            "source_id": "S1",
+            "insufficient_evidence": False,
+        },
+        *[
+            {"sentence_id": value, "source_id": "S1", "insufficient_evidence": False}
+            for value in (-1, 999, True, "1", [1], 1.5, None)
+        ],
     ],
 )
 def test_invalid_drafts_never_become_displayed_answers(draft):
@@ -131,7 +141,7 @@ def test_invalid_drafts_never_become_displayed_answers(draft):
 
 def test_explicit_model_abstention():
     runtime = FakeRuntime(
-        draft={"explanation": "", "source_id": "", "insufficient_evidence": True}
+        draft={"sentence_id": 0, "source_id": "", "insufficient_evidence": True}
     )
     result = rag.explain_text("iPhone Wi-Fi off", runtime=runtime)
     assert result.status == "insufficient_evidence"
@@ -217,3 +227,71 @@ def test_untrusted_catalog_url_is_rejected(monkeypatch):
     monkeypatch.setattr(rag, "search_chunks", lambda *a, **k: [bad_hit])
     result = rag.explain_text("iPhone Wi-Fi off", runtime=FakeRuntime())
     assert result.status == "knowledge_unavailable"
+
+
+def test_password_input_outweighs_a_wrong_payment_expansion():
+    text = "Text message: Your account will be closed today. Enter your password at https://account-check.example to keep it open."
+    hits = search_chunks(
+        text, expansion="payment money scam website link", category="message"
+    )
+    assert "password" in hits[0].chunk.text.lower()
+
+
+def test_sentence_selection_cannot_delete_qualification():
+    reference = rag.retrieve_references(
+        "iPhone connected Wi-Fi no internet",
+        TextObservation(category="wifi", signals=[], issues=[]),
+    )[0]
+    sentences = rag.reference_sentences(reference)
+    sentence = next(s for s in sentences if "blue checkmark" in s)
+    assert "does not by itself prove" in sentence
+
+
+def test_dependent_sentence_retains_its_antecedent_and_literal_spacing():
+    reference = rag.retrieve_references(
+        "virus popup call support",
+        TextObservation(category="alert", signals=[], issues=[]),
+    )[0]
+    excerpt = "Tech support scams start with a bogus warning. It may ask you to call a phone number."
+    reference = replace(reference, excerpt=excerpt)
+    assert rag.reference_sentences(reference) == [excerpt]
+
+
+def test_historical_network_context_keeps_the_present_day_contrast():
+    reference = rag.retrieve_references(
+        "public Wi-Fi encryption",
+        TextObservation(category="wifi", signals=[], issues=[]),
+    )[0]
+    excerpt = "In the past, many websites did not use encryption.\n\nToday, most websites use encryption to protect your data."
+    assert rag.reference_sentences(replace(reference, excerpt=excerpt)) == [excerpt]
+
+
+def test_sentence_ranking_uses_specific_input_state():
+    observation = TextObservation(category="wifi", signals=[], issues=[])
+    reference = rag.retrieve_references(
+        "iPhone Wi-Fi no internet connection", observation
+    )[0]
+    assert (
+        "Internet Connection"
+        in rag.reference_sentences(reference, "iPhone Wi-Fi no internet connection")[0]
+    )
+
+
+def test_generic_account_query_does_not_assume_an_apple_account():
+    hits = search_chunks("message enter your account password", category="message")
+    assert all(h.chunk.document.platform == "any" for h in hits)
+    apple_hits = search_chunks(
+        "Apple account password verification code", category="message"
+    )
+    assert any(h.chunk.document.platform == "ios" for h in apple_hits)
+
+
+def test_contextless_input_is_abstained_and_raw_prediction_preserved():
+    runtime = FakeRuntime(
+        observation=TextObservation(category="message", signals=[], issues=[])
+    )
+    result = rag.explain_text("Could you help me with this?", runtime=runtime)
+    assert result.status == "uncertain_analysis"
+    assert result.raw_observation.category == "message"
+    assert result.analysis_adjustments == ["contextless_help_request"]
+    assert not runtime.calls

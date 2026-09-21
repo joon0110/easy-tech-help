@@ -314,6 +314,7 @@ def search_chunks(
     query: str,
     *,
     category: str,
+    expansion: str = "",
     limit: int = 3,
     directory: Path = DEFAULT_KNOWLEDGE_DIR,
 ) -> list[ChunkHit]:
@@ -321,8 +322,11 @@ def search_chunks(
     if limit < 1:
         raise ValueError("limit must be positive")
     candidates = search_documents(
-        query, category=category, limit=10, directory=directory
+        query + " " + expansion, category=category, limit=10, directory=directory
     )
+    if category == "message" and not {"apple", "icloud"}.intersection(_terms(query)):
+        # A generic account message is not necessarily about an Apple Account.
+        candidates = [h for h in candidates if h.document.platform == "any"]
     if not candidates:
         return []
     chunks = build_chunks([hit.document for hit in candidates])
@@ -331,7 +335,9 @@ def search_chunks(
     if not chunks or not sum(lengths):
         return []
     average = sum(lengths) / len(chunks)
-    query_terms = set(_chunk_terms(query))
+    primary_terms = set(_chunk_terms(query))
+    expanded_terms = set(_chunk_terms(expansion)) - primary_terms
+    query_terms = primary_terms | expanded_terms
     specific = query_terms - GENERIC_TERMS
     frequency = Counter(term for c in counts for term in c)
     document_scores = {h.document.id: h.score for h in candidates}
@@ -346,7 +352,23 @@ def search_chunks(
                 idf = math.log(
                     1 + (len(chunks) - frequency[term] + 0.5) / (frequency[term] + 0.5)
                 )
-                score += idf * tf * 2.5 / (tf + 1.5 * (0.25 + 0.75 * length / average))
+                weight = 1.0 if term in primary_terms else 0.2
+                # Password/code evidence should not be outranked by generic
+                # link words or a mistaken expanded payment signal.
+                if term in primary_terms & {
+                    "password",
+                    "passcode",
+                    "verification",
+                    "credential",
+                }:
+                    weight *= 3
+                score += (
+                    weight
+                    * idf
+                    * tf
+                    * 2.5
+                    / (tf + 1.5 * (0.25 + 0.75 * length / average))
+                )
         score += 0.05 * document_scores[chunk.document.id]
         scored.append(ChunkHit(chunk, round(score, 6)))
     # Limit one document to two excerpts so another relevant source can appear.

@@ -39,19 +39,21 @@ if submitted:
         st.write(result.observation.summary)
         st.write(result.observation.uncertainty)
         if result.status == "answered":
-            st.subheader("Explanation from a reference")
+            st.subheader("What the reference says")
             st.text(result.explanation)
             st.caption(result.message)
             st.subheader("Source used for this explanation")
-            for citation in result.citations:
-                reference = citation.reference
+            for reference in {
+                c.reference.source_id: c.reference for c in result.citations
+            }.values():
                 st.write(reference.title)
                 st.caption(
                     "FTC original article"
                     if reference.source_type == "original_html"
                     else "Apple-based summary, not an original Apple page"
                 )
-                st.text(citation.quote)
+                with st.expander("Read the surrounding passage"):
+                    st.text(reference.excerpt)
                 for url in reference.urls:
                     st.link_button("Open official source", url)
         else:

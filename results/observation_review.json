@@ -1,0 +1,88 @@
+{
+  "scope": "Replay of unchanged recorded PyTorch outputs on previously inspected development/regression splits. Measures application corrections, not a new model run or independent accuracy.",
+  "runs": {
+    "validation": {
+      "source": "results/pytorch_v2_validation.json",
+      "source_sha256": "482637964c51bff66760d9d5f12a4ebe8340e3c3c0a2518e4098e8fd52a9720d",
+      "before": {
+        "examples": 34,
+        "valid_outputs": 34,
+        "category_correct": 31,
+        "observation_matches": 20,
+        "category_accuracy": 0.9118,
+        "observation_match_rate": 0.5882,
+        "signal_tp": 16,
+        "signal_fp": 2,
+        "signal_fn": 11,
+        "signal_precision": 0.8889,
+        "signal_recall": 0.5926,
+        "signal_f1": 0.7111,
+        "ordinary_controls": 14,
+        "ordinary_with_extra_signals": 1,
+        "ordinary_extra_signal_rate": 0.0714,
+        "mean_seconds": 1.79
+      },
+      "after": {
+        "examples": 34,
+        "valid_outputs": 34,
+        "category_correct": 31,
+        "observation_matches": 20,
+        "category_accuracy": 0.9118,
+        "observation_match_rate": 0.5882,
+        "signal_tp": 16,
+        "signal_fp": 2,
+        "signal_fn": 11,
+        "signal_precision": 0.8889,
+        "signal_recall": 0.5926,
+        "signal_f1": 0.7111,
+        "ordinary_controls": 14,
+        "ordinary_with_extra_signals": 1,
+        "ordinary_extra_signal_rate": 0.0714,
+        "mean_seconds": 1.79
+      },
+      "changes": []
+    },
+    "regression": {
+      "source": "results/pytorch_v2_regression.json",
+      "source_sha256": "fa75d49732646bc57a48765a96b713ed709e2ebb453059f4d9f1ba1768825ce8",
+      "before": {
+        "examples": 34,
+        "valid_outputs": 32,
+        "category_correct": 30,
+        "observation_matches": 23,
+        "category_accuracy": 0.8824,
+        "observation_match_rate": 0.6765,
+        "signal_tp": 15,
+        "signal_fp": 2,
+        "signal_fn": 7,
+        "signal_precision": 0.8824,
+        "signal_recall": 0.6818,
+        "signal_f1": 0.7692,
+        "ordinary_controls": 12,
+        "ordinary_with_extra_signals": 0,
+        "ordinary_extra_signal_rate": 0.0,
+        "mean_seconds": 1.788
+      },
+      "after": {
+        "examples": 34,
+        "valid_outputs": 32,
+        "category_correct": 30,
+        "observation_matches": 23,
+        "category_accuracy": 0.8824,
+        "observation_match_rate": 0.6765,
+        "signal_tp": 15,
+        "signal_fp": 2,
+        "signal_fn": 7,
+        "signal_precision": 0.8824,
+        "signal_recall": 0.6818,
+        "signal_f1": 0.7692,
+        "ordinary_controls": 12,
+        "ordinary_with_extra_signals": 0,
+        "ordinary_extra_signal_rate": 0.0,
+        "mean_seconds": 1.788
+      },
+      "changes": []
+    }
+  },
+  "review_code_sha256": "399b75caeba460c2c38b486dbf7adf0a6767a6961d0d9cb7cd493f0827ffa463"
+}

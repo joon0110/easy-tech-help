@@ -1,5 +1,7 @@
 # Local RAG connection — development results
 
+Historical initial connection. The current extractive explanation and application classification corrections are documented in [RAG improvement](rag_improvement.md). This file and `rag_development.json` preserve the earlier failures; the current runner defaults to `rag_improved.json`.
+
 Run: 2026-09-21, Apple M4 / MPS, PyTorch 2.14.0, Transformers 5.17.0, PEFT 0.21.0.
 
 ## Implemented

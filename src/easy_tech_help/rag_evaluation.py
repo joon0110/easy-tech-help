@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
 
-from easy_tech_help.rag import RAG_PROMPT, explain_text
+from easy_tech_help.rag import RAG_PROMPT, explain_text, reference_sentences
 from easy_tech_help.retrieval import DEFAULT_KNOWLEDGE_DIR
 from easy_tech_help.runtime import ADAPTER_DIR, MODEL_DIR, LocalRuntime
 
@@ -61,6 +61,57 @@ CASES = [
     ("missing_context", "Please help me with this.", "uncertain_analysis", set()),
 ]
 
+# Explicit development expectations, separate from structural citation checks.
+RELEVANT_PHRASES = {
+    "wifi_no_internet": ("internet",),
+    "wifi_off": ("Wi-Fi is on", "turn Wi-Fi on"),
+    "popup_support": ("phone number",),
+    "message_password": ("password",),
+    "public_wifi": ("encryption", "encrypt"),
+}
+
+
+def case_checks(case_id, result, expected_status, expected_documents):
+    retrieved = {r.document_id for r in result.retrieved}
+    cited = {c.reference.document_id for c in result.citations}
+    checks = {
+        "status_matches": result.status == expected_status,
+        "expected_document_retrieved": bool(retrieved & expected_documents)
+        if expected_documents
+        else not retrieved,
+        "citation_provenance_valid": all(
+            c.reference in result.retrieved and c.quote in c.reference.excerpt
+            for c in result.citations
+        ),
+        "expected_document_cited": bool(cited & expected_documents)
+        if expected_documents
+        else not cited,
+        "explanation_is_exact_selected_evidence": result.explanation
+        == "\n\n".join(c.quote for c in result.citations)
+        and all(c.quote in reference_sentences(c.reference) for c in result.citations),
+        "relevant_phrase_present": any(
+            p.casefold() in result.explanation.casefold()
+            for p in RELEVANT_PHRASES[case_id]
+        )
+        if case_id in RELEVANT_PHRASES
+        else not result.explanation,
+    }
+    if case_id == "message_password":
+        signals = {s.signal for s in result.observation.signals}
+        checks["credential_not_payment"] = (
+            "credential_request" in signals and "payment_request" not in signals
+        )
+    if case_id == "missing_context":
+        checks["context_classified_unknown"] = (
+            result.observation.category == "unknown"
+            and result.observation.issues == ["insufficient_context"]
+        )
+    if case_id == "public_wifi":
+        checks["past_present_context_preserved"] = (
+            "In the past," in result.explanation and "Today," in result.explanation
+        )
+    return checks
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -68,7 +119,7 @@ def main() -> int:
     parser.add_argument("--model-dir", type=Path, default=MODEL_DIR)
     parser.add_argument("--adapter-dir", type=Path, default=ADAPTER_DIR)
     parser.add_argument(
-        "--output", type=Path, default=Path("results/rag_development.json")
+        "--output", type=Path, default=Path("results/rag_improved.json")
     )
     args = parser.parse_args()
     runtime = LocalRuntime(args.model_dir, args.adapter_dir, args.device)
@@ -76,21 +127,7 @@ def main() -> int:
     for case_id, text, expected_status, expected_documents in CASES:
         start = time.perf_counter()
         result = explain_text(text, runtime=runtime)
-        retrieved = {r.document_id for r in result.retrieved}
-        cited = {c.reference.document_id for c in result.citations}
-        checks = {
-            "status_matches": result.status == expected_status,
-            "expected_document_retrieved": bool(retrieved & expected_documents)
-            if expected_documents
-            else not retrieved,
-            "citation_provenance_valid": all(
-                c.reference in result.retrieved and c.quote == c.reference.excerpt
-                for c in result.citations
-            ),
-            "expected_document_cited": bool(cited & expected_documents)
-            if expected_documents
-            else not cited,
-        }
+        checks = case_checks(case_id, result, expected_status, expected_documents)
         results.append(
             {
                 "id": case_id,
@@ -108,7 +145,7 @@ def main() -> int:
     paths += [DEFAULT_KNOWLEDGE_DIR / doc["file"] for doc in catalog["documents"]]
     report = {
         "created_at": datetime.now(UTC).isoformat(),
-        "scope": "Assistant-authored development checks; prompt/debugging inputs, not unseen evaluation. Provenance checks do not measure factual entailment or action safety.",
+        "scope": "Assistant-authored development checks, not unseen evaluation. Explanations are extractive: exact source sentence identity is checked, not free-form paraphrase entailment. Keyword checks cannot establish semantic relevance or action safety. Classification corrections are application rules, not retraining.",
         "device": runtime.device,
         "versions": {name: version(name) for name in ("torch", "transformers", "peft")},
         "python": platform.python_version(),
@@ -128,7 +165,13 @@ def main() -> int:
             name: hashlib.sha256(
                 Path(__file__).with_name(name).read_bytes()
             ).hexdigest()
-            for name in ("rag.py", "retrieval.py", "runtime.py", "rag_evaluation.py")
+            for name in (
+                "rag.py",
+                "retrieval.py",
+                "runtime.py",
+                "rag_evaluation.py",
+                "observation_review.py",
+            )
         },
         "generation": {
             "analysis_adapter_enabled": True,

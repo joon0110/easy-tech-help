@@ -167,3 +167,20 @@ def test_cli_utf8_file(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr("sys.argv", ["analysis", "--file", str(path)])
     assert analysis.main() == 0
     assert json.loads(capsys.readouterr().out)["category"] == "wifi"
+
+
+def test_analysis_entrypoint_applies_context_review(monkeypatch):
+    monkeypatch.setattr(
+        analysis,
+        "_chat",
+        lambda _: _response(
+            {
+                "category": "message",
+                "signals": [],
+                "issues": [],
+            }
+        ),
+    )
+    assert analysis.analyze_text("Please help me with this.").issues == [
+        "insufficient_context"
+    ]

@@ -7,6 +7,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from easy_tech_help.config import load_settings
+from easy_tech_help.observation_review import review_observation
 from easy_tech_help.schemas import TextObservation, validate_input
 
 DEFAULT_MODEL = "artifacts/pytorch-model"
@@ -94,9 +95,10 @@ def analyze_text(text: str, *, model: str = DEFAULT_MODEL) -> TextObservation:
             return TextObservation.unknown("invalid_model_output")
         if response.get("done") is not True or response.get("done_reason") != "stop":
             return TextObservation.unknown("incomplete_model_output")
-        return TextObservation.model_validate_json(
+        observation = TextObservation.model_validate_json(
             response["message"]["content"], context={"input_text": text}
         )
+        return review_observation(text, observation)[0]
     except (KeyError, TypeError, ValueError):
         return TextObservation.unknown("invalid_model_output")
 
