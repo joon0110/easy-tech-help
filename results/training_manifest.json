@@ -1,0 +1,98 @@
+{
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "model_revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+  "base_weights_sha256": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee",
+  "prompt_sha256": "d02d719298f1cc7f0d9ce8cb6cb4f19e81d80fb3af34c4689014a93030634d74",
+  "data_sha256": {
+    "train": "3431bd218db5e0911c67959549a38190cfdf03ccda2540a5a665a4bc7404e46f",
+    "validation": "c015841bd7e4688a299c80ce1c6ed6084580090df06710cc3f10d657163c4a6d",
+    "test": "dab6be7ea5aaa857bdece9cf16da70e8a57165b211243cb70fd7ba4a0cf5a671"
+  },
+  "device": "mps",
+  "base_dtype": "torch.bfloat16",
+  "adapter_dtype": "float32",
+  "seed": 42,
+  "epochs_requested": 5,
+  "gradient_accumulation": 4,
+  "learning_rate": 0.0002,
+  "max_steps": 0,
+  "lora_rank": 8,
+  "lora_alpha": 16,
+  "lora_dropout": 0.05,
+  "target_modules": [
+    "q_proj",
+    "v_proj"
+  ],
+  "weight_decay": 0.01,
+  "warmup_fraction": 0.1,
+  "gradient_clipping": 1.0,
+  "trainable_parameters": 1089536,
+  "total_parameters": 1544803840,
+  "token_lengths": {
+    "train": {
+      "min": 486,
+      "max": 630,
+      "mean": 521.61,
+      "max_completion_tokens": 107
+    },
+    "validation": {
+      "min": 491,
+      "max": 612,
+      "mean": 529.62,
+      "max_completion_tokens": 89
+    },
+    "test": {
+      "min": 491,
+      "max": 610,
+      "mean": 523.15,
+      "max_completion_tokens": 91
+    }
+  },
+  "packages": {
+    "torch": "2.14.0",
+    "transformers": "5.17.0",
+    "peft": "0.21.0",
+    "accelerate": "1.15.0"
+  },
+  "loss": "completion-only causal cross entropy; token-weighted accumulation",
+  "selection": "lowest validation loss; test never used for training/selection",
+  "selected_epoch": 4,
+  "initial_validation_loss": 0.2667485488252052,
+  "best_validation_loss": 0.05867116996097249,
+  "history": [
+    {
+      "epoch": 1,
+      "step": 33,
+      "train_loss": 0.1675729961605267,
+      "validation_loss": 0.11278481475897074
+    },
+    {
+      "epoch": 2,
+      "step": 66,
+      "train_loss": 0.08644432691767324,
+      "validation_loss": 0.07579472218161981
+    },
+    {
+      "epoch": 3,
+      "step": 99,
+      "train_loss": 0.05434601056440742,
+      "validation_loss": 0.06404572124147896
+    },
+    {
+      "epoch": 4,
+      "step": 132,
+      "train_loss": 0.037932202581810494,
+      "validation_loss": 0.05867116996097249
+    },
+    {
+      "epoch": 5,
+      "step": 165,
+      "train_loss": 0.029953498523086167,
+      "validation_loss": 0.05930086968621216
+    }
+  ],
+  "steps_completed": 165,
+  "seconds": 1291.525285333395,
+  "training_completed": true,
+  "final_mps_allocated_bytes": 3133566976
+}

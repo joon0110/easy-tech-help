@@ -1,0 +1,193 @@
+{
+  "report_version": 1,
+  "review": "automated; authored synthetic and redacted public SMS; human review still needed",
+  "model_training_run": false,
+  "model_accuracy_evaluated": false,
+  "splits": {
+    "train": {
+      "examples": 132,
+      "scenario_groups": 131,
+      "categories": {
+        "alert": 24,
+        "message": 76,
+        "unknown": 8,
+        "wifi": 24
+      },
+      "case_kinds": {
+        "adversarial_input": 2,
+        "connection_issue": 13,
+        "normal_connection": 7,
+        "ordinary": 53,
+        "suspicious_pattern": 24,
+        "unclear": 7,
+        "unsolicited_promotion": 26
+      },
+      "provenance": {
+        "synthetic_authored": 80,
+        "uci_sms_derived": 52
+      },
+      "source_labels": {
+        "ham": 26,
+        "spam": 26
+      },
+      "signals": {
+        "airplane_mode_on": 3,
+        "credential_request": 4,
+        "install_request": 4,
+        "no_internet": 3,
+        "payment_request": 17,
+        "remote_access_request": 5,
+        "support_phone_number": 6,
+        "unsecured_network": 3,
+        "urgent_security_warning": 6,
+        "verification_code_request": 5,
+        "visible_link": 11,
+        "wifi_connected": 11,
+        "wifi_off": 4,
+        "wifi_password_prompt": 3
+      },
+      "missing_signals": [],
+      "issues": {
+        "contradictory_input": 2,
+        "insufficient_context": 2,
+        "unsupported": 4
+      },
+      "no_signal_examples": 71,
+      "sha256": "3431bd218db5e0911c67959549a38190cfdf03ccda2540a5a665a4bc7404e46f"
+    },
+    "validation": {
+      "examples": 34,
+      "scenario_groups": 34,
+      "categories": {
+        "alert": 5,
+        "message": 20,
+        "unknown": 3,
+        "wifi": 6
+      },
+      "case_kinds": {
+        "connection_issue": 4,
+        "normal_connection": 1,
+        "ordinary": 14,
+        "suspicious_pattern": 5,
+        "unclear": 3,
+        "unsolicited_promotion": 7
+      },
+      "provenance": {
+        "synthetic_authored": 20,
+        "uci_sms_derived": 14
+      },
+      "source_labels": {
+        "ham": 7,
+        "spam": 7
+      },
+      "signals": {
+        "airplane_mode_on": 1,
+        "credential_request": 1,
+        "install_request": 2,
+        "no_internet": 1,
+        "payment_request": 5,
+        "remote_access_request": 1,
+        "support_phone_number": 3,
+        "unsecured_network": 1,
+        "urgent_security_warning": 2,
+        "verification_code_request": 1,
+        "visible_link": 5,
+        "wifi_connected": 2,
+        "wifi_off": 1,
+        "wifi_password_prompt": 1
+      },
+      "missing_signals": [],
+      "issues": {
+        "contradictory_input": 1,
+        "insufficient_context": 1,
+        "unsupported": 1
+      },
+      "no_signal_examples": 16,
+      "sha256": "c015841bd7e4688a299c80ce1c6ed6084580090df06710cc3f10d657163c4a6d"
+    },
+    "test": {
+      "examples": 34,
+      "scenario_groups": 34,
+      "categories": {
+        "alert": 5,
+        "message": 20,
+        "unknown": 3,
+        "wifi": 6
+      },
+      "case_kinds": {
+        "adversarial_input": 1,
+        "connection_issue": 5,
+        "normal_connection": 1,
+        "ordinary": 12,
+        "suspicious_pattern": 6,
+        "unclear": 2,
+        "unsolicited_promotion": 7
+      },
+      "provenance": {
+        "synthetic_authored": 20,
+        "uci_sms_derived": 14
+      },
+      "source_labels": {
+        "ham": 7,
+        "spam": 7
+      },
+      "signals": {
+        "airplane_mode_on": 1,
+        "credential_request": 1,
+        "install_request": 2,
+        "no_internet": 1,
+        "payment_request": 4,
+        "remote_access_request": 1,
+        "support_phone_number": 3,
+        "unsecured_network": 1,
+        "urgent_security_warning": 1,
+        "verification_code_request": 1,
+        "visible_link": 2,
+        "wifi_connected": 2,
+        "wifi_off": 1,
+        "wifi_password_prompt": 1
+      },
+      "missing_signals": [],
+      "issues": {
+        "contradictory_input": 1,
+        "insufficient_context": 1,
+        "unsupported": 1
+      },
+      "no_signal_examples": 18,
+      "sha256": "dab6be7ea5aaa857bdece9cf16da70e8a57165b211243cb70fd7ba4a0cf5a671"
+    }
+  },
+  "near_duplicate_threshold": 0.85,
+  "public_sms_near_duplicate_threshold": 0.75,
+  "cross_split_near_duplicates": [],
+  "similarity_method": "max bidirectional word SequenceMatcher; NFKC, case, URL and number normalization",
+  "semantic_independence_proven": false,
+  "prompt_sha256": "d02d719298f1cc7f0d9ce8cb6cb4f19e81d80fb3af34c4689014a93030634d74",
+  "tokenizer": {
+    "id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "transformers_version": "5.17.0",
+    "max_sequence_tokens": 1536,
+    "max_completion_tokens": 256
+  },
+  "token_lengths": {
+    "train": {
+      "min": 486,
+      "max": 630,
+      "mean": 521.61,
+      "max_completion_tokens": 107
+    },
+    "validation": {
+      "min": 491,
+      "max": 612,
+      "mean": 529.62,
+      "max_completion_tokens": 89
+    },
+    "test": {
+      "min": 491,
+      "max": 610,
+      "mean": 523.15,
+      "max_completion_tokens": 91
+    }
+  }
+}

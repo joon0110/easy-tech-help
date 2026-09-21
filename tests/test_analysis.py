@@ -1,7 +1,6 @@
 """Text input, untrusted model output, evidence and local transport boundaries."""
 
 import json
-from urllib import error
 
 import pytest
 
@@ -43,8 +42,8 @@ def test_text_is_sent_without_image_and_evidence_matches_original(monkeypatch):
     assert result.signals[0].evidence in INPUT
     assert json.loads(observed["messages"][1]["content"]) == {"input_text": INPUT}
     assert all("images" not in message for message in observed["messages"])
-    assert observed["stream"] is False
-    assert "summary" not in observed["format"]["properties"]
+    assert set(observed) == {"model", "messages"}
+    assert "summary" not in result.training_target()
 
 
 @pytest.mark.parametrize("text", ["", " \n\t", "x" * 4001, "a\x00b", b"image bytes"])
@@ -146,29 +145,17 @@ def test_unicode_punctuation_in_english_evidence_is_preserved(monkeypatch):
 @pytest.mark.parametrize(
     "failure, message",
     [
-        (error.URLError("refused"), "Cannot reach"),
-        (TimeoutError(), "timed out"),
-        (
-            error.HTTPError(analysis.OLLAMA_CHAT_URL, 404, "missing", {}, None),
-            "not found",
-        ),
-        (
-            error.HTTPError(analysis.OLLAMA_CHAT_URL, 500, "failed", {}, None),
-            "HTTP 500",
-        ),
+        (FileNotFoundError("adapter not found"), "adapter not found"),
+        (ImportError("torch missing"), "torch missing"),
+        (RuntimeError("MPS failed"), "MPS failed"),
+        (ValueError("Adapter mismatch"), "Adapter mismatch"),
     ],
 )
-def test_transport_errors_and_proxy_bypass(monkeypatch, failure, message):
-    class FakeOpener:
-        def open(self, outgoing, timeout):
-            assert outgoing.full_url == "http://127.0.0.1:11434/api/chat"
-            raise failure
+def test_local_runtime_errors_are_reported(monkeypatch, failure, message):
+    def fail(*args):
+        raise failure
 
-    def fake_opener(proxy_handler):
-        assert proxy_handler.proxies == {}
-        return FakeOpener()
-
-    monkeypatch.setattr(analysis.request, "build_opener", fake_opener)
+    monkeypatch.setattr(analysis, "_load_runtime", fail)
     with pytest.raises(analysis.LocalModelError, match=message):
         analysis.analyze_text(INPUT)
 

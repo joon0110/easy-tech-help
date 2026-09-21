@@ -15,6 +15,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+data = [
+    "transformers==5.17.0",
+]
+training = [
+    "torch==2.14.0",
+    "transformers==5.17.0",
+    "peft==0.21.0",
+    "accelerate==1.15.0",
+]
 dev = [
     "pytest>=8,<10",
     "ruff>=0.9,<1",
@@ -25,7 +34,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["live: opt-in integration checks requiring local Ollama and a text model"]
+markers = ["live: opt-in integration checks requiring the local PyTorch model and adapter"]
 
 [tool.ruff]
 target-version = "py311"

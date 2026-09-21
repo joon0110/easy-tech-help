@@ -1,0 +1,37 @@
+{
+  "dataset": "uci_sms_spam_collection",
+  "title": "SMS Spam Collection",
+  "authors": ["Tiago A. Almeida", "Jose Maria Gomez Hidalgo"],
+  "citation": "Almeida, T. & Hidalgo, J. (2011). SMS Spam Collection [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5CC84",
+  "doi": "https://doi.org/10.24432/C5CC84",
+  "homepage": "https://archive.ics.uci.edu/dataset/228/sms+spam+collection",
+  "download_url": "https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip",
+  "downloaded_on": "2026-09-21",
+  "license_on_uci": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "archive_sha256": "1587ea43e58e82b14ff1f5425c88e17f8496bfcdb67a583dbff9eefaf9963ce3",
+  "archive_local_path": "artifacts/sources/uci_sms_spam_collection.zip",
+  "source_counts": {"ham": 4827, "spam": 747, "total": 5574},
+  "selected_counts": {"ham": 40, "spam": 40, "total": 80},
+  "selected_splits": {
+    "train": {"ham": 26, "spam": 26},
+    "validation": {"ham": 7, "spam": 7},
+    "test": {"ham": 7, "spam": 7}
+  },
+  "selection": "Manually inspected subset of seed-42 shuffled candidates 35-260 characters long; not representative random sampling. Excluded explicit/adult, personal-name, control-character and redundant examples. A repeated prize campaign is grouped within train.",
+  "modifications": [
+    "HTML entities decoded and whitespace normalized",
+    "Displayed URLs replaced with https://source-link.example",
+    "Phones, long numbers, some postal contacts replaced with placeholders",
+    "Project-specific observation labels and rationales authored separately"
+  ],
+  "sanitization_version": 1,
+  "review": "Automated assistant review; no independent human review",
+  "limitations": [
+    "Historical spam includes advertising; spam is not a verified scam label",
+    "Only a small selected subset is annotated for this project",
+    "Public benchmark texts may have occurred in base-model pretraining",
+    "Redactions apply to the reviewed subset and are not a general PII-removal guarantee",
+    "The source contains no iPhone Wi-Fi or system-popup ground truth"
+  ]
+}

@@ -11,7 +11,7 @@ pytestmark = [
     pytest.mark.live,
     pytest.mark.skipif(
         os.getenv("EASY_TECH_HELP_RUN_LIVE_TESTS") != "1",
-        reason="Requires local Ollama; opt in with EASY_TECH_HELP_RUN_LIVE_TESTS=1",
+        reason="Requires local PyTorch weights and adapter; opt in with EASY_TECH_HELP_RUN_LIVE_TESTS=1",
     ),
 ]
 

@@ -38,12 +38,12 @@ def test_form_submits_text_and_shows_validated_result(monkeypatch):
 
 def test_model_failure_is_displayed_without_app_crash(monkeypatch):
     def fail(*args, **kwargs):
-        raise analysis.LocalModelError("Cannot reach local Ollama")
+        raise analysis.LocalModelError("Local PyTorch adapter is missing")
 
     monkeypatch.setattr(analysis, "analyze_text", fail)
     app = AppTest.from_file(str(APP)).run()
     app.text_area[0].input("iPhone Wi-Fi is off.").run()
     app.button[0].click().run()
     assert not app.exception
-    assert app.error[0].value == "Cannot reach local Ollama"
+    assert app.error[0].value == "Local PyTorch adapter is missing"
     assert len(app.json) == 0
