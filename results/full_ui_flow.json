@@ -1,0 +1,87 @@
+{
+  "created_at": "2026-09-21T21:59:00.810Z",
+  "scope": "Chrome with actual local PyTorch model; one sensitive-request example, not a usability study",
+  "checks": {
+    "empty_input": true,
+    "example_without_inference": true,
+    "actual_model_result": true,
+    "official_source_urls": true,
+    "copy_without_hover": true,
+    "exact_clipboard": true,
+    "exact_download": true,
+    "reset": true,
+    "mobile_390_and_320_no_overflow": true,
+    "no_javascript_errors": true
+  },
+  "result_accessibility": {
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "tags": [
+          "cat.color",
+          "wcag2aa",
+          "wcag143",
+          "TTv5",
+          "TT13.c",
+          "EN-301-549",
+          "EN-9.1.4.3",
+          "ACT",
+          "RGAAv4",
+          "RGAA-3.2.1"
+        ],
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "fgColor": "#926c05",
+                  "bgColor": "#fcf7d4",
+                  "contrastRatio": 4.43,
+                  "fontSize": "13.5pt (18px)",
+                  "fontWeight": "normal",
+                  "messageKey": null,
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<div data-testid=\"stAlertContainer\" class=\"stAlertContainer st-emotion-cache-o7598y ep9twe70\" role=\"alert\">",
+                    "target": [
+                      ".stAlertContainer"
+                    ]
+                  },
+                  {
+                    "html": "<div class=\"stAlert\" data-testid=\"stAlert\">",
+                    "target": [
+                      ".stAlert"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element has insufficient color contrast of 4.43 (foreground color: #926c05, background color: #fcf7d4, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<p>A sensitive request needs independent checking. This does not establish that the sender is a scammer.</p>",
+            "target": [
+              ".st-emotion-cache-fs0hfs > .st-emotion-cache-og0vbt.ewutnf10[data-testid=\"stMarkdownContainer\"] > p"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.43 (foreground color: #926c05, background color: #fcf7d4, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ],
+    "incomplete": []
+  },
+  "ui_sha256": {
+    "app/app.py": "ea3c27362aa827f898cd734b8ce99ae2d8c1a09780524a3614d96f777ed874aa",
+    "app/styles.css": "9596e494ff4b0397c25dde490a3873cf03ff4f2c03b62159f16707bdc062345a",
+    ".streamlit/config.toml": "a177e3251e1e22fe267e8c6c98005e06cf74f5682e2fbe04f3c0bcab4c48e771"
+  }
+}

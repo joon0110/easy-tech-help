@@ -1,4 +1,4 @@
-"""Product entrypoint: local RAG followed by code-controlled safety guidance."""
+"""Run analysis, RAG, action selection, and the family summary."""
 
 import argparse
 import json

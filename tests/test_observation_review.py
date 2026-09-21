@@ -65,7 +65,12 @@ def test_password_request_is_not_a_payment(evidence):
     assert reviewed.signals[0].signal == "credential_request"
     assert reviewed.signals[0].evidence in text
     assert original.signals[0].signal == "payment_request"
-    assert notes == ["password_request_mislabeled_as_payment"]
+    expected_notes = ["password_request_mislabeled_as_payment"]
+    if "https://" in text:
+        expected_notes.append("literal_cue_added:visible_link")
+        assert reviewed.signals[1].signal == "visible_link"
+        assert reviewed.signals[1].evidence == "https://account.example"
+    assert notes == expected_notes
 
 
 @pytest.mark.parametrize(

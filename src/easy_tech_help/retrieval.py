@@ -1,4 +1,4 @@
-"""Small, offline document retrieval for the V1 RAG corpus."""
+"""Load and search local reference documents."""
 
 import hashlib
 import json
@@ -300,7 +300,7 @@ CHUNK_STOP_WORDS = STOP_WORDS | {
 
 def _chunk_terms(value: str) -> list[str]:
     value = value.casefold().replace("wi-fi", "wifi").replace("pop-up", "popup")
-    # Small, transparent English plural normalization for this fixed corpus.
+    # Normalize common English plurals for keyword matching.
     return [
         w[:-1]
         if len(w) > 4 and w.endswith("s") and not w.endswith(("ss", "us", "is"))
@@ -316,6 +316,7 @@ def search_chunks(
     category: str,
     expansion: str = "",
     limit: int = 3,
+    per_document_limit: int = 2,
     directory: Path = DEFAULT_KNOWLEDGE_DIR,
 ) -> list[ChunkHit]:
     """Document relevance gate, then BM25 (k1=1.5, b=.75) over literal chunks."""
@@ -371,10 +372,10 @@ def search_chunks(
                 )
         score += 0.05 * document_scores[chunk.document.id]
         scored.append(ChunkHit(chunk, round(score, 6)))
-    # Limit one document to two excerpts so another relevant source can appear.
+    # Cap excerpts per document so one source does not fill every result slot.
     result, per_doc = [], Counter()
     for hit in sorted(scored, key=lambda h: (-h.score, h.chunk.id)):
-        if per_doc[hit.chunk.document.id] < 2:
+        if per_doc[hit.chunk.document.id] < per_document_limit:
             result.append(hit)
             per_doc[hit.chunk.document.id] += 1
         if len(result) == limit:

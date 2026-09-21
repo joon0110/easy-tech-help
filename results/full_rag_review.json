@@ -1,0 +1,110 @@
+{
+  "scope": "Assistant qualitative review of all 15 answered challenge cases (14 displayed). Not blinded, independent or expert-reviewed; labels were assigned after inspecting output and were not used for tuning. No overall semantic-accuracy claim.",
+  "cases": [
+    {
+      "id": "otp_paraphrase",
+      "verdict": "useful_general",
+      "note": "Independent contact advice is applicable. The cited spam-text document is legitimate but was omitted from this case's predeclared expected-document list; that coverage failure overstates the relevance problem.",
+      "displayed": true,
+      "quote": "If you think the message might be real, contact the company using a phone number or website you know is real."
+    },
+    {
+      "id": "password_paraphrase",
+      "verdict": "weak_relevance",
+      "note": "A billing-problem example does not explain the request for a sign-in secret.",
+      "displayed": true,
+      "quote": "The email says your account is on hold because of a billing problem."
+    },
+    {
+      "id": "gift_card_photos",
+      "verdict": "useful_general",
+      "note": "The specific-payment-method warning applies, although the selected sentence does not explain gift-card redemption codes.",
+      "displayed": true,
+      "quote": "Scammers tell you to PAY in a specific way."
+    },
+    {
+      "id": "normal_code_notice",
+      "verdict": "misapplied_to_normal_input",
+      "note": "The source is about phishing but the input only reports a login code and tells the recipient not to share it. Upstream false signals lead to misplaced warning context.",
+      "displayed": true,
+      "quote": "Scammers send fake text messages to trick you into giving them your personal information \u2014 things like your password, account number, or Social Security number."
+    },
+    {
+      "id": "delivery_small_fee",
+      "verdict": "weak_relevance",
+      "note": "The selected sentence discusses lottery fees, while the user describes a parcel redelivery fee. Literal provenance does not make this the right explanation.",
+      "displayed": true,
+      "quote": "Others will lie and say you won money in a lottery or sweepstakes but have to pay a fee to get it."
+    },
+    {
+      "id": "past_and_current_request",
+      "verdict": "weak_relevance",
+      "note": "A general MFA benefit does not explain the danger of giving a stranger the current verification code.",
+      "displayed": true,
+      "quote": "Multi-factor authentication makes it harder for scammers to log in to your accounts if they do get your username and password."
+    },
+    {
+      "id": "remote_screen_popup",
+      "verdict": "useful_general_hidden",
+      "note": "The tech-support remote-access description is relevant in general. The product hides this passage because it mentions remote access; only approved actions and source links remain.",
+      "displayed": false,
+      "quote": "If one of these tech support impersonators gets you on the phone, they ask for remote access to your computer and pretend to scan it for viruses. They claim to find a malicious program and offer to remove it for a fee."
+    },
+    {
+      "id": "browser_install",
+      "verdict": "useful_general",
+      "note": "A webpage warning does not prove infection; this directly qualifies the popup claim.",
+      "displayed": true,
+      "quote": "A warning, prize, or technical-support phone number displayed by a webpage is not proof that the phone is infected."
+    },
+    {
+      "id": "browser_support_number",
+      "verdict": "useful_general",
+      "note": "The warning and support-number qualification applies to this popup.",
+      "displayed": true,
+      "quote": "A warning, prize, or technical-support phone number displayed by a webpage is not proof that the phone is infected."
+    },
+    {
+      "id": "injected_payment_popup",
+      "verdict": "weak_relevance",
+      "note": "The selected quote is about infection warnings and phone numbers rather than the payment demand to restore access.",
+      "displayed": true,
+      "quote": "A warning, prize, or technical-support phone number displayed by a webpage is not proof that the phone is infected."
+    },
+    {
+      "id": "wifi_disabled",
+      "verdict": "useful_specific",
+      "note": "Checking that Wi-Fi is on is relevant to a switch described as off.",
+      "displayed": true,
+      "quote": "If an iPhone cannot connect to Wi-Fi, open Settings, Wi-Fi and check that Wi-Fi is on."
+    },
+    {
+      "id": "airplane_wifi_working",
+      "verdict": "context_conflict",
+      "note": "The displayed quote says to check that Airplane Mode is off even though the described Wi-Fi works while Airplane Mode is on. It omits the application policy's intentional-state qualification. The classifier also misses the Airplane Mode signal.",
+      "displayed": true,
+      "quote": "Check that Airplane Mode is off."
+    },
+    {
+      "id": "known_wifi_password",
+      "verdict": "partial_relevance",
+      "note": "The selected instruction explains joining a network but omits how to handle an unknown network password; the separately approved next action does address it.",
+      "displayed": true,
+      "quote": "To join a Wi-Fi network on iPhone, open Settings, Wi-Fi and turn Wi-Fi on."
+    },
+    {
+      "id": "public_unsecured",
+      "verdict": "weak_relevance",
+      "note": "The chosen home-network passage concerns unsecured devices rather than the public network label. The approved encryption action is separate.",
+      "displayed": true,
+      "quote": "Just as hackers can get to your data through unsecured networks, they can also get to your network through unsecured devices."
+    },
+    {
+      "id": "normal_wifi_working",
+      "verdict": "weak_relevance",
+      "note": "A list of home-network device types does not help interpret the reported working iPhone connection.",
+      "displayed": true,
+      "quote": "Your home networks might have a range of wireless devices on them \u2014 from computers and phones to IP cameras , voice assistants , smart TVs, and connected appliances ."
+    }
+  ]
+}

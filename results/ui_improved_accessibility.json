@@ -1,0 +1,90 @@
+{
+  "created_at": "2026-09-21T22:51:11.129Z",
+  "scope": "Initial product page only; automated Chrome accessibility scan, not certification or a screen-reader user study.",
+  "checks": [
+    {
+      "width": 1440,
+      "violations": [],
+      "incomplete": [],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "button-name",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "meta-viewport",
+        "nested-interactive"
+      ],
+      "overflow": {
+        "document": false,
+        "app": false
+      }
+    },
+    {
+      "width": 390,
+      "violations": [],
+      "incomplete": [],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "button-name",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "meta-viewport",
+        "nested-interactive"
+      ],
+      "overflow": {
+        "document": false,
+        "app": false
+      }
+    },
+    {
+      "width": 320,
+      "violations": [],
+      "incomplete": [],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "button-name",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "meta-viewport",
+        "nested-interactive"
+      ],
+      "overflow": {
+        "document": false,
+        "app": false
+      }
+    }
+  ]
+}

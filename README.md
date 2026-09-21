@@ -1,45 +1,55 @@
 # EasyTechHelp
 
-Local text-based GenAI tech support for older adults and their families.
+Local tech support for confusing messages, popups, and iPhone Wi-Fi problems.
 
-My grandmother lives alone, and helping with confusing phone messages remotely can be difficult. EasyTechHelp is being built to explain a pasted message, alert, or iPhone Wi-Fi description, identify concerns, and suggest a safe next step with sources. If the issue remains difficult, it will prepare a summary to share with family.
+## Why I built it
 
-**V1 direction: English-only text input and text fine-tuning, local inference, RAG, and application safety rules.** Screenshot input and image training are outside the active V1. This decision replaces the earlier screenshot plan.
+My grandmother lives alone. When something unfamiliar appears on her phone, explaining it over a call can be difficult. I built EasyTechHelp to help her understand what a message says, what deserves caution, and what she can do next. If she still needs help, she can copy a short summary to send to family.
 
-## Current status
+The app accepts **English text**: paste a message or type what the phone shows. It runs a fine-tuned local model, looks up supporting information in local reference files, and uses code-defined rules to choose the next steps. It does not inspect screenshots or control the phone.
 
-| Component | Status |
+![EasyTechHelp](results/ui/desktop.png)
+
+## What it handles
+
+| Input | What the app checks |
 | --- | --- |
-| Python package, configuration, pytest, Ruff | Implemented |
-| Text input in Streamlit and CLI | Implemented; white responsive UI, examples, retained results and clear/reset flow |
-| Local text model → validated category, signals, quoted evidence | Implemented |
-| English labeled text examples and SFT export | 200 examples: 120 synthetic + 80 redacted public SMS; source/coverage/leakage/token checks |
-| Local reference corpus and chunk retrieval | Implemented; 6 FTC originals + 4 Apple-based summaries, sentence-aware chunks and BM25 |
-| RAG-connected explanation and source display | Implemented in Streamlit and CLI; retrieved excerpts, catalog URLs and explicit abstention |
-| Cautions and code-controlled next actions | Implemented: fixed action catalog, local support checks, prohibited-action exclusion and uncertainty fallback |
-| Family handoff summary | Implemented: reviewed actions, private details omitted, copy control and CLI export |
-| PyTorch training and inference | Implemented: Qwen2.5 1.5B + PEFT LoRA on MPS/CPU |
-| Baseline evaluation and fine-tuning comparison | Completed; [current results](results/improvement.md) and [first-run history](results/README.md); signal errors remain |
+| Text messages and email | Requests for passwords, verification codes, payment, or remote access; suspicious links and contact details |
+| Popups and alerts | Browser virus warnings, support-number requests, installation prompts, and ordinary notifications |
+| iPhone Wi-Fi descriptions | Wi-Fi off, Airplane Mode, password prompts, connected-but-no-internet states, and unsecured-network labels |
 
-The current app shows **reviewed observations, cautions, next steps, actions to avoid, official sources and an optional family summary**. Model-selected reference text is extractive and receives an additional display check. All next steps come from fixed application templates, with local supporting evidence checked before use. Raw predictions and application corrections remain in diagnostic traces. Family summaries use reviewed metadata and approved actions, excluding raw input and model prose. Input is not automatically saved or added to training data. Raw adapter observation matches remain 20/34 development and 23/34 regression; public-SMS extraction remains weak. See [family handoff checks](results/handoff.md), [stage 5 safety results](results/safety.md), [grounding improvements](results/rag_improvement.md) and [analysis results](results/improvement.md).
+Results include a short explanation, cautions, next steps, actions to avoid, and source links. **Ask family for help** provides a summary that can be copied or downloaded. The app does not send it automatically.
 
-## Intended V1 flow
+## How it works
 
 ```text
-Pasted text / typed Wi-Fi status
-  → local PyTorch text model with a trained LoRA adapter
-  → validated category + signals + exact quotes from the input
-  → retrieve relevant local FTC / Apple-based help documents
-  → local model selects a source passage; code renders its exact words
-  → application safety rules select allowed actions and reject unsafe guidance
-  → explanation / cautions / next action / sources / optional family summary
+English text
+  → Qwen + trained LoRA adapter: category, signals, and input quotes
+  → schema validation and application review
+  → BM25 retrieval from local FTC articles and Apple-based summaries
+  → local model selects a relevant source passage, or abstains
+  → safety rules choose supported actions from a fixed catalog
+  → explanation, next steps, sources, and optional family summary
 ```
 
-Scope: SMS/email/chat (`message`), alerts/notifications/browser popups (`alert`), iPhone connectivity descriptions (`wifi`), and missing/unsupported/contradictory context (`unknown`). Ordinary messages and harmless alerts are necessary controls. A Wi-Fi problem is not automatically a scam. V1 supports English input and output. Other languages are outside the supported scope; the prompt requests an unsupported result, but language detection is not a deterministic input check.
+The model generates structured observations. For explanations, it selects a passage from the retrieved material; the app displays the original wording. Next actions come from reviewed templates, with their supporting source text checked separately. This keeps model-generated instructions out of the action list.
+
+| Part | Tools |
+| --- | --- |
+| Model | Qwen2.5-1.5B-Instruct |
+| Fine-tuning and inference | PyTorch, Transformers, PEFT LoRA; MPS on the tested Mac, CPU fallback |
+| Validation | Pydantic |
+| Retrieval | Local document parsing and BM25; no vector database |
+| Interface | Streamlit and CSS |
+| Checks | pytest, Ruff, actual-model evaluations, browser interaction and accessibility checks |
+
+See [architecture](docs/architecture.md) for the implementation details.
 
 ## Run locally
 
-Use Python 3.11+ from this repository root. The tested machine is an M4 Mac with 16 GB memory.
+Tested on an M4 Mac with 16 GB memory. Use Python 3.11 or later and run these commands from the repository root.
+
+### Install
 
 ```bash
 python3 -m venv .venv
@@ -47,177 +57,143 @@ source .venv/bin/activate
 python -m pip install -e '.[dev,training]'
 ```
 
-Download the pinned model once (about 3.1 GB; internet required):
+### Download the model
+
+The first download needs internet access and about 3.1 GB for the base weights. Later inference uses local files and needs no API key.
 
 ```bash
-python -c "from huggingface_hub import snapshot_download; snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', revision='989aa7980e4cf806f80c7fef2b1adb7bc71aa306', local_dir='artifacts/pytorch-model', allow_patterns=['*.json','*.safetensors','merges.txt','vocab.json','LICENSE'])"
+python - <<'PY'
+from huggingface_hub import snapshot_download
+
+snapshot_download(
+    'Qwen/Qwen2.5-1.5B-Instruct',
+    revision='989aa7980e4cf806f80c7fef2b1adb7bc71aa306',
+    local_dir='artifacts/pytorch-model',
+    allow_patterns=['*.json', '*.safetensors', 'merges.txt', 'vocab.json', 'LICENSE'],
+)
+PY
 ```
 
-Train the initial adapter, then the continuation selected with generated validation answers. Downloaded weights and trained adapters stay in ignored `artifacts/`; a new clone needs both training steps. An existing nonempty adapter directory will not be overwritten. If the initial adapter already exists, run only the continuation command. The app defaults to `artifacts/pytorch-adapter-v2`.
+### Train the adapter
+
+Weights are excluded from Git, so a fresh clone needs these two training runs. Skip this section if `artifacts/pytorch-adapter-v2` already contains a completed adapter. Training refuses to overwrite a nonempty output directory.
 
 ```bash
-python -m easy_tech_help.training --device mps --output artifacts/pytorch-adapter
-python -m easy_tech_help.training --device mps --init-adapter artifacts/pytorch-adapter --output artifacts/pytorch-adapter-v2 --epochs 3 --learning-rate 0.00005 --decision-weight 4 --select-by-generation
+python -m easy_tech_help.training \
+  --device mps \
+  --output artifacts/pytorch-adapter
+
+python -m easy_tech_help.training \
+  --device mps \
+  --init-adapter artifacts/pytorch-adapter \
+  --output artifacts/pytorch-adapter-v2 \
+  --epochs 3 \
+  --learning-rate 0.00005 \
+  --decision-weight 4 \
+  --select-by-generation
+```
+
+Use `--device cpu` if MPS is unavailable; it will be slower. The app requires a completed adapter. Training settings and measured model results are in [the training report](results/improvement.md).
+
+### Open the app
+
+```bash
 streamlit run app/app.py
 ```
 
-CLI alternatives:
+Open the local URL printed in the terminal, usually `http://localhost:8501`.
+
+Configuration is optional. [.env.example](.env.example) lists the model path, adapter path, and device. Copy it to `.env` only if you need different settings; `auto` chooses an available device. It is not an API-key file.
+
+The app keeps results in the current session and does not write an input history or add submissions to training data. **Start a new check** clears the current input and result. Downloading a family summary saves the file only when requested.
+
+### Command line
 
 ```bash
-python -m easy_tech_help.guidance --text 'Text message: Send your verification code.'
 python -m easy_tech_help.guidance --file examples/message.txt
-python -m easy_tech_help.rag --text 'My iPhone is connected to Wi-Fi but says No Internet Connection.'
-python -m easy_tech_help.rag --file examples/message.txt
-python -m easy_tech_help.analysis --text 'Text message: Reply with your verification code.'
-python -m easy_tech_help.analysis --file examples/message.txt
-python -m easy_tech_help.analysis --text 'iPhone Wi-Fi is off.'
-python -m easy_tech_help.runtime --base --text 'Reply with your verification code.'
+python -m easy_tech_help.guidance --file examples/popup.txt
+python -m easy_tech_help.guidance --file examples/wifi.txt
+python -m easy_tech_help.guidance --file examples/wifi.txt --family-summary
 ```
 
-The model is [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct). Generation uses local files in the Python process and needs no hosted-model API key. Set `--device cpu` when MPS is unavailable; CPU execution is slower. `.env.example` documents optional model/adapter directories and the device. An old `EASY_TECH_HELP_LOCAL_MODEL=qwen3:4b` setting must be removed or changed to `artifacts/pytorch-model`. The app requires a completed adapter and will not silently substitute the base model.
+Normal CLI output includes diagnostic JSON and the original input. Use `--family-summary` for text intended to be shared. The `analysis`, `rag`, and `runtime` commands are debugging tools; `guidance` runs the complete product flow.
 
-`guidance` is the product CLI with the safety policy. `rag`, `analysis` and `runtime` are diagnostic entrypoints; they do not choose approved next actions. Guidance JSON includes the filtered product explanation and raw analysis for debugging. Only the filtered view belongs in a product interface.
+## Try these examples
 
-The former positional image-path CLI and `analyze_screenshot()` have been replaced with `--text` / `--file` and `analyze_text()`. Image parsing, image request payloads, image tests and the direct Pillow dependency were removed. Streamlit may still install Pillow as its own dependency.
+These are synthetic examples, not messages collected from users.
 
-## Text data and training setup
+**Text message** — expect a warning about sharing a verification code and advice to verify the request independently.
 
-The repository examples are in [data/text/](data/text/). Read the [labeling guide](data/text/README.md) before changing them.
-
-| Split | Examples | Scenario groups | Purpose |
-| --- | ---: | ---: | --- |
-| [train.jsonl](data/text/train.jsonl) | 132 | 131 | Supervised fine-tuning |
-| [validation.jsonl](data/text/validation.jsonl) | 34 | 34 | Model/adapter selection |
-| [test.jsonl](data/text/test.jsonl) | 34 | 34 | Regression checks; a new independent final set is still needed |
-
-The dataset contains **120 revised synthetic examples plus 80 redacted public SMS**. The UCI subset includes **40 normal (`ham`) and 40 spam messages**, with the original labels stored only as provenance. Public spam includes advertising; it is not a verified fraud label. [Source attribution, original notice and checksums](data/sources/uci_sms/README.md) make the selected records traceable to the downloaded archive. Synthetic examples cover iPhone Wi-Fi, alerts, sensitive requests, missing context and adversarial inputs. Misleading framing was removed, and most message inputs no longer announce their category. Synthetic iPhone prompts are not verified verbatim system text.
-
-**More real-world data is needed for iPhone Wi-Fi states and popups/alerts.** Their current training examples are synthetic, not text collected and verified from actual devices. The public SMS dataset does not cover these categories. Before claiming reliable performance, collect de-identified English text from real iPhone Wi-Fi screens and actual popups/alerts, include normal and problematic cases, review the labels, and reserve separate real examples for evaluation.
-
-Each record contains the input, correct structured answer (`expected`), an intentionally wrong answer (`rejected_output`) with an explanation, scenario group, language, review status and reference IDs. “Ordinary” means the described text has no selected suspicious request; it does not certify the sender as authentic. Wrong answers are for review/error analysis, **never the supervised training target**.
-
-Validate and export:
-
-```bash
-python -m easy_tech_help.dataset
-python -m easy_tech_help.dataset --check-tokens --report data/text/preparation_report.json --export artifacts/text-sft
+```text
+Text message: This is customer support. Reply with the verification code you just received.
 ```
 
-The token check requires the `data` extra and the cached pinned Qwen tokenizer; installation/download commands are in [data/text/README.md](data/text/README.md#preparation-commands). Export creates `train.jsonl` and `valid.jsonl` with system/user/assistant messages. It shares the exact inference prompt and exports only the correct category/signals/issues as the assistant answer. Test examples, wrong answers, rationale and review metadata are excluded. `artifacts/` and `.venv-training/` are ignored by Git. This command prepares data; it **does not train a model**.
+**Popup** — expect a source-check warning, advice to close the unfamiliar popup, and a reminder to avoid its phone number.
 
-All 200 examples passed structural/evidence/reference checks, case metadata checks, split leakage checks and the pinned tokenizer length check. The longest full sequence is 630 tokens, within the 1,536-token limit. The [preparation report](data/text/preparation_report.json) records coverage, split hashes and token measurements. Review is `automated_reviewed`, not independent human/domain review. Source redactions are reproducible with `python -m easy_tech_help.sms_source` after downloading the original ZIP. Public benchmark messages may already have appeared in model pretraining; this small curated corpus cannot establish real-world accuracy.
-
-The model is pinned to revision `989aa7980e4cf806f80c7fef2b1adb7bc71aa306`, with its weights checksum verified before training. PyTorch computes causal language-model loss only on assistant completion tokens; PEFT updates 1,089,536 LoRA parameters while the base remains frozen. Initial training uses 5 epochs, rank 8, learning rate 2e-4, microbatch 1 and accumulation 4; selection uses validation loss. The continuation uses 3 additional epochs, learning rate 5e-5 and 4× loss weight for category/signal/issue decisions, with unchanged data and prompt. It selects by generated validation observation matches, then ordinary-control errors, signal F1 and loss; epoch 2 was selected. BF16 base weights and FP32 adapters are used on MPS. Inference explicitly disables repetition penalties so signal names and input quotes can repeat. See [architecture](docs/architecture.md) for details.
-
-Compare the same base and current adapter on the existing regression split (this test set has already been inspected):
-
-```bash
-python -m easy_tech_help.evaluation --device mps --split test --output results/pytorch_v2_regression.json
+```text
+A Safari popup says my iPhone has a virus and tells me to call a support number.
 ```
 
-The evaluator records raw generations, invalid outputs, category accuracy, signal precision/recall, observation matches, ordinary-control extra signals, latency and separate synthetic/public results. These are analysis metrics; the RAG and safety development checks run separately.
+**Wi-Fi** — expect connection checks, including comparison with another device on the same known network.
 
-## References and retrieval
-
-[knowledge/README.md](knowledge/README.md) describes the six original FTC HTML pages, four clearly labeled Apple-based summaries, and source URLs. The app reads these local files; it does not fetch their links at runtime. No vector database, embeddings service, new model download or API key is required.
-
-`rag.py` now connects the full explanation path:
-
-1. Analyze the text with the existing PyTorch LoRA adapter, validate its observations and apply narrow application corrections. The model, extraction prompt and training data are unchanged.
-2. Map `alert` to corpus category `popup`; use the original text for retrieval, with lower-weight English expansions for observed signals. Generic account messages do not select Apple Account material unless Apple or iCloud is mentioned.
-3. Filter documents using weighted title/tag/body keywords. Group adjacent short paragraphs to retain context, split at sentence boundaries (target 75 words, preserving longer sentences), then rank excerpts with BM25 plus a small document-score contribution. Retrieve at most three candidates, at most two per document.
-4. Split the highest-ranked usable passage into complete sentences, retain dependent continuations and past/present contrasts, and rank these units against the original input. The same loaded Qwen base model, with the extraction adapter temporarily disabled, selects one numbered unit or abstains. Selection uses repetition penalty 1.1; observation extraction keeps 1.0.
-5. Validate the source ID and integer selection. Copy the entire selected unit verbatim; reject free-form additions, invented IDs and malformed selections. Official URLs come only from the catalog. Apple summaries are explicitly labeled as summaries.
-
-Unknown analysis, no matching evidence, model abstention, invalid source IDs, incomplete generation and runtime/file failures produce explicit messages. A failed draft is not displayed as an answer. The CLI includes raw output for debugging; the app shows only accepted explanations and source excerpts. Training examples and user input are never added to the trusted corpus automatically.
-
-**Exact quotation prevents new claims being added to the explanation; it does not prove relevance or safety.** A selected passage can still be poorly matched, and a general reference cannot verify this sender, this network or the cause of this problem. Next steps are selected separately by the application policy below. High-impact procedural passages and broad network-safety assurances are hidden from the product explanation panel; official source links remain available. The wording is less conversational than free-form generation; that is the current grounding tradeoff.
-
-Run the real local RAG development checks (eight assistant-authored inputs, not an independent accuracy benchmark):
-
-```bash
-python -m easy_tech_help.rag_evaluation --device mps --output results/rag_improved.json
-python -m easy_tech_help.review_evaluation
+```text
+My iPhone is connected to Wi-Fi, but it says No Internet Connection.
 ```
 
-The RAG report preserves raw and reviewed observations, correction reasons, retrieved excerpts, selected quotes, raw model output, timings and source/code/adapter fingerprints. `review_evaluation` separately replays the corrections on 68 recorded predictions; it does not run or retrain a model. See [reviewed results and limits](results/rag_improvement.md).
+An ordinary message such as `Text message from a friend: See you at the book club tomorrow.` should receive no specific warning. That result does not verify who sent it.
 
-## Stage 5: safety guidance
+All three examples above were checked through the actual local app, including source links and the family summary. See [the final check](results/final_review.md).
 
-`guidance.py` runs RAG and then `safety.py`. The policy selects from **11 fixed actions**, including independent verification, closing an unfamiliar browser popup through browser controls, checking Wi-Fi settings, comparing connectivity on a known network, and asking for more context. It supplies cautions and actions to avoid. It does not issue a definitive scam verdict or certify that a sender/network is safe.
+## Data and sources
 
-Specific actions are bound to a reviewed document ID and literal support span. The application reads the local document, verifies that span and checks its official URL before displaying the action. This deterministic evidence lookup is separate from the model's explanatory retrieval, so a failed explanation can still have independently supported actions. Missing/changed evidence falls back to pause/clarification, without invented citations. Generic fallback actions are labeled `policy_only` in the trace.
+Training uses **200 labeled examples**: 120 synthetic records and 80 redacted messages from the public UCI SMS collection. The split is 132 training, 34 validation, and 34 regression examples. The public subset has 40 normal and 40 spam messages; “spam” is a source label, not a verified scam verdict. Only the correct structured answers are used as supervised targets.
 
-User text and generated prose never become action text. Twelve prohibited action types—including paying the requester, sharing secrets, following message links/numbers, granting remote access, installing from a popup, joining unknown networks, disabling security and resetting/erasing settings—are absent from the allowed catalog and rejected by the resolver. Reference passages mentioning high-impact operations are withheld from the product panel, and full unreviewed passages are not expanded in the app. Input evidence remains explicitly quoted as user text.
+**Wi-Fi and popup/alert training examples are synthetic. More real device text is needed for these categories.** Labels were reviewed by the assistant, not independently by domain experts. See the [data guide](data/text/README.md) and [SMS attribution](data/sources/uci_sms/README.md).
 
-Conservative input guards supplement missed password/code/payment/remote-access signals. Negated, historical and educational contexts, receipts, and network-password distinctions have explicit controls. These English heuristics can still miss paraphrases or flag ambiguous requests. A Wi-Fi issue uses a connection-check level; a normal message receives no special action and no safety guarantee. Airplane Mode is checked without automatically turning it off, and network resets are never suggested in this version.
+RAG reads **six original FTC HTML articles and four clearly labeled Apple-based summaries** from [knowledge/](knowledge/README.md). Source links let users open the official pages; the app does not visit those URLs during inference. User submissions and training examples are not part of the reference corpus.
 
-Run the real product development evaluation:
+## Evaluation
 
-```bash
-python -m easy_tech_help.safety_evaluation --device mps --output results/safety_development.json
-```
+| Check | Latest recorded result |
+| --- | ---: |
+| Automated tests | 237 passed |
+| Separately enabled actual-model smoke tests | 7/7 |
+| Original authored product challenges, after fixes | 24/24 |
+| Additional authored cases, after one further fix | 16/16 |
+| Action, evidence, and handoff constraints | 70/70 |
+| RAG development checks | 8/8 |
+| Raw model exact observations on inspected regression data | 23/34 |
+| Same observations after application corrections | 34/34 |
 
-The twelve assistant-authored cases include the eight existing RAG inputs plus remote-access, prompt-injection/payment, negated-password and receipt controls. This is development evidence, not a real-world safety certification. [Results, policy decisions and remaining limits](results/safety.md).
-
-## Stage 6: family handoff
-
-After analysis, open **Ask family for help** and use the visible copy icon at the top right of the summary, or **Save summary (.txt)**. The panel stays collapsed until opened; its wording suggests help for sensitive requests, source-check cases and uncertain guidance. Review the summary before sharing. The app does not send messages.
-
-`handoff.py` assembles an English summary from the reviewed category, policy flags and approved actions. It includes the described situation, what was checked, next steps, help needed and the official sources supporting those steps. It explicitly says actions taken and resolution are unknown. A connection problem is not presented as proof of a scam.
-
-Raw input, input quotes, model prose and free-text guidance fields never enter this summary. Names, contact details, network names, passwords, codes and user-provided links are therefore omitted, rather than passed through a pattern-based redactor. Actions and evidence are rechecked against the local catalog before sharing; mismatches fall back to a generic help request. Apple-based summaries remain labeled. This preserves the policy boundary but cannot correct an upstream classification error.
-
-Export only the shareable text from the CLI:
-
-```bash
-python -m easy_tech_help.guidance --text "My iPhone Wi-Fi is off." --family-summary
-```
-
-Without `--family-summary`, CLI JSON is a diagnostic record that includes raw analysis and may contain private input. Share the dedicated summary, not the entire diagnostic record.
-
-Re-run the full local model → RAG → safety → handoff development checks:
-
-```bash
-python -m easy_tech_help.safety_evaluation --device mps --output results/handoff_development.json
-```
-
-See [stage 6 results and limitations](results/handoff.md). No new model training is required for this deterministic sharing step.
-
-## Product interface
-
-The English interface uses a white background, dark text, local system fonts and a single readable column. It includes a large labeled input, three example buttons that fill the draft without running inference, one primary action, and plain-language loading/error states. Next steps and actions to avoid remain visible; supporting details, sources and family sharing can be opened when needed. Technical JSON remains available through the CLI.
-
-Results stay in the current Streamlit session across reruns. **Text used for this check** distinguishes a completed check from a subsequently edited draft. **Start a new check** clears the input, result and error from application session state. A failed new check removes the previous result and keeps the draft for retry. No input history is written to disk. Family summaries can be copied or explicitly downloaded by the user.
-
-Theme settings are in `.streamlit/config.toml`; layout and responsive styles are in `app/styles.css`. Streamlit 1.64+ is required. [Interface checks and previews](results/interface.md) cover real local-model submission, official links, clipboard, downloads and mobile layouts. Usability testing with older adults remains necessary.
-
-## Validation and limits
+These examples have been inspected and used during development. The improved application score is **not** independent accuracy or evidence of better model weights. Raw model signal recall remains 15/22; the public-SMS subset still has missed signals before code corrections. [Full results and limitations](results/quality_improvement.md) include the original failures, fixes, latency, and browser checks.
 
 ```bash
 python -m pytest -q
 ruff check .
 ruff format --check .
+EASY_TECH_HELP_RUN_LIVE_TESTS=1 python -m pytest tests/test_analysis_live.py -q
+python -m easy_tech_help.product_evaluation --device mps --output results/product_improved.json
+python -m easy_tech_help.verification_evaluation --device mps --output results/verification.json
+python -m easy_tech_help.rag_evaluation --device mps --output results/rag_quality_checks.json
 ```
 
-Optional local-model smoke tests (development inputs, not the held-out dataset):
+## Limits
 
-```bash
-EASY_TECH_HELP_RUN_LIVE_TESTS=1 python -m pytest tests/test_analysis_live.py -v -s
-```
+- English text only, up to 4,000 characters. Screenshots and other device platforms are outside this version.
+- The app can miss a request or misread context. It cannot verify a sender, inspect a network, or guarantee safety.
+- A quoted source can still be poorly matched. When there is no suitable passage, the app says so instead of providing an unsupported explanation.
+- Remove passwords, verification codes, and personal details before submitting text. Share the family summary rather than diagnostic JSON.
+- Independent contemporary data, real iPhone examples, and usability testing with older adults are still missing from the evaluation.
 
-Inputs are limited to 4,000 characters. Pydantic rejects unknown fields, unsupported categories, duplicate signals, incompatible connection states, and evidence absent from the original input. Invalid or unfinished generations become `unknown`; runtime failures are reported explicitly. Application templates supply the displayed summary and uncertainty text.
+## Repository
 
-Exact quotation proves only that words occurred in the input. It does not prove that a signal interpretation, sender claim, or network status is true. The action allowlist restricts what the product can suggest; it cannot ensure correct risk detection or source relevance. Independent evaluation must cover false alarms, missed scams and uncertain context. Remove passwords, verification codes and personal details before pasting text.
-
-Active evaluation data lives in [data/text/validation.jsonl](data/text/validation.jsonl) for development and [data/text/test.jsonl](data/text/test.jsonl) for regression checks after its initial evaluation. The preparation report captures data checks before training; training manifests and evaluation results are separate. Normal controls are necessary to measure false alarms, and unseen independently reviewed recent messages remain necessary for a stronger evaluation.
-
-## Next milestones
-
-| Order | Work | Difficulty (1–5) |
-| --- | --- | ---: |
-| 1 | Usability-test the completed interface with older adults | 3 |
-| 2 | Add independent contemporary cases and evaluate the complete guidance pipeline; improve training from reviewed failures | 5 |
-| 3 | Publish demo/results/limits | 2 |
-
-Architecture and implementation boundaries: [docs/architecture.md](docs/architecture.md).
+| Path | Contents |
+| --- | --- |
+| `app/` | Streamlit interface, stylesheet, and local SVG tab icon |
+| `src/easy_tech_help/` | Training, inference, retrieval, safety rules, and evaluation commands |
+| `data/` | Labeled text, provenance, and evaluation fixtures |
+| `knowledge/` | Local references and source catalog |
+| `examples/` | Text files to try with the app or CLI |
+| `tests/` | Automated checks |
+| `results/` | Training records, evaluation reports, and UI previews |
+| `artifacts/` | Local model weights and adapters; ignored by Git |

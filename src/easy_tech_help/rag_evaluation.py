@@ -107,9 +107,11 @@ def case_checks(case_id, result, expected_status, expected_documents):
             and result.observation.issues == ["insufficient_context"]
         )
     if case_id == "public_wifi":
+        # Require both sides when quoting the corpus's historical contrast.
+        # A different complete passage (e.g. HTTPS guidance) need not contain it.
         checks["past_present_context_preserved"] = (
-            "In the past," in result.explanation and "Today," in result.explanation
-        )
+            "In the past," in result.explanation
+        ) == ("Today," in result.explanation)
     return checks
 
 

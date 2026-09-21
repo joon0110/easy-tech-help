@@ -44,3 +44,7 @@ streamlit run app/app.py
 Submit an empty input, select **Text message**, then select **Help me understand**. Open **Sources and explanation** and **Ask family for help**. Copy/save the summary, compare its contents, then select **Start a new check**. Repeat at a narrow browser width and with keyboard navigation.
 
 These checks establish behavior for the exercised flow, not comprehensive accessibility certification or usability with older adults. Screen-reader testing, physical phone/browser checks and sessions with representative users remain. UI styling uses Streamlit test-ID selectors and should be rechecked after a Streamlit upgrade. Upstream classification and source-relevance limitations still apply.
+
+## Follow-up accessibility fixes
+
+The full audit subsequently found warning text at 4.43:1 contrast and an overlapping invisible Streamlit header. The quality pass darkened warning text and removed that header. See [current quality results](quality_improvement.md), [initial-page scan](ui_improved_accessibility.json) and [real-model browser flow](ui_improved_flow.json). The earlier table above is a historical UI-stage snapshot; previews show the corrected current UI. Current checks found zero axe violations/incomplete checks on the tested initial and result pages, and all exercised copy/download/reset/source-link flows passed.

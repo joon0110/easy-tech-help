@@ -1,0 +1,65 @@
+{
+  "created_at": "2026-09-21T23:00:09.421Z",
+  "scope": "Three documented examples through Chrome and the actual local PyTorch app. Functional checks, not unseen accuracy.",
+  "checks": {
+    "local_svg_favicon": true,
+    "all_three_categories": true,
+    "source_links": true,
+    "family_summaries": true,
+    "reset_between_inputs": true,
+    "no_javascript_errors": true
+  },
+  "fingerprints": {
+    "app/app.py": "99008a7aab4b85a1000a3f843724a62b85fdf4741cbf2c35ad67ad4dbd6dee1b",
+    "app/favicon.svg": "85cb988e9de7d59fe3e2e2681660d27cddd472f6f60638c4f8442bf6cabe4e36",
+    "examples/message.txt": "6091ae45621f0fca2787036c5b8a0b4b616839d66d0073c6400c985ed11fff86",
+    "examples/popup.txt": "b43e43fbe45bafa5811692f5c16c87ff6ef48c6c05df81a2452a17aa3a6c08a6",
+    "examples/wifi.txt": "3cb1138b36f6ce6c3f27fa3c61b438510c8f5b67239fb3e9897005189ea870ca"
+  },
+  "cases": [
+    {
+      "id": "message",
+      "input": "Text message: This is customer support. Reply with the verification code you just received.",
+      "category_summary": "This is a message or email.",
+      "result_title": "Pause and check this request",
+      "next_steps": "1. If a company is named, contact it through a website or phone number you already know is genuine. Use a route you open yourself, not a link or number in the message.\n2. If you are unsure or already followed the request, stop and discuss what happened with someone you know and trust.",
+      "sources": [
+        "https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams",
+        "https://consumer.ftc.gov/articles/how-avoid-scam",
+        "https://consumer.ftc.gov/articles/how-recognize-and-report-spam-text-messages"
+      ],
+      "reference_panel": "keyboard_arrow_down\n\nSources and explanation\n\nScammers send fake text messages to trick you into giving them your personal information — things like your password, account number, or Social Security number.\n\nThese sentences are quoted from a local reference. General source guidance does not verify this sender, this network's safety, or the cause of this problem.\n\nReferences\n\nFTC: How To Recognize and Avoid Phishing Scams\n\nFTC original article\n\nRead on FTC.gov\n\nFTC: How To Avoid a Scam\n\nFTC original article\n\nRead on FTC.gov\n\nFTC: How to Recognize and Report Spam Text Messages\n\nFTC original article\n\nRead on FTC.gov",
+      "family_summary_available": true,
+      "raw_input_omitted_from_summary": true
+    },
+    {
+      "id": "popup",
+      "input": "A Safari popup says my iPhone has a virus and tells me to call a support number.",
+      "category_summary": "This is a notification or popup.",
+      "result_title": "Check where this came from",
+      "next_steps": "1. For an unfamiliar popup, close the browser tab using the browser's controls. Avoid buttons inside the popup, including its close button.\n2. If a company is named, contact it through a website or phone number you already know is genuine. Use a route you open yourself, not a link or number in the message.",
+      "sources": [
+        "https://support.apple.com/en-us/102524",
+        "https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams",
+        "https://consumer.ftc.gov/articles/how-spot-avoid-and-report-tech-support-scams"
+      ],
+      "reference_panel": "keyboard_arrow_down\n\nSources and explanation\n\nA warning, prize, or technical-support phone number displayed by a webpage is not proof that the phone is infected.\n\nThese sentences are quoted from a local reference. General source guidance does not verify this sender, this network's safety, or the cause of this problem.\n\nReferences\n\nSafari pop-up guidance for iPhone\n\nApple-based summary, not an original Apple page\n\nRead on Apple Support\n\nFTC: How To Recognize and Avoid Phishing Scams\n\nFTC original article\n\nRead on FTC.gov\n\nFTC: How To Spot, Avoid, and Report Tech Support Scams\n\nFTC original article\n\nRead on FTC.gov",
+      "family_summary_available": true,
+      "raw_input_omitted_from_summary": true
+    },
+    {
+      "id": "wifi",
+      "input": "My iPhone is connected to Wi-Fi, but it says No Internet Connection.",
+      "category_summary": "This describes an iPhone Wi-Fi connection.",
+      "result_title": "Let's check your connection",
+      "next_steps": "1. Open Settings > Wi-Fi and check whether Wi-Fi is on. Check the displayed network name; this does not confirm internet access.\n2. If this is a network you recognize, check whether another device on the same network can access the internet.",
+      "sources": [
+        "https://support.apple.com/en-us/111786",
+        "https://support.apple.com/en-us/111107"
+      ],
+      "reference_panel": "keyboard_arrow_down\n\nSources and explanation\n\nFor a No Internet Connection message, try the same network on another device to see whether the problem is limited to the iPhone.\n\nThese sentences are quoted from a local reference. General source guidance does not verify this sender, this network's safety, or the cause of this problem.\n\nReferences\n\niPhone Wi-Fi connection troubleshooting\n\nApple-based summary, not an original Apple page\n\nRead on Apple Support\n\nJoin a known Wi-Fi network on iPhone\n\nApple-based summary, not an original Apple page\n\nRead on Apple Support",
+      "family_summary_available": true,
+      "raw_input_omitted_from_summary": true
+    }
+  ]
+}

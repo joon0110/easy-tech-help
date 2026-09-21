@@ -187,7 +187,7 @@ def load_dataset(directory: Path = DEFAULT_DATA_DIR) -> dict[str, list[TextExamp
 
 
 def sft_messages(example: TextExample) -> list[dict[str, str]]:
-    """Use one serialization for export, length checking and future training."""
+    """Share the chat format across export, token checks, and training."""
     return build_messages(example.input_text) + [
         {
             "role": "assistant",

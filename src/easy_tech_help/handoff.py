@@ -1,4 +1,4 @@
-"""Private-by-construction family handoff from reviewed policy metadata only."""
+"""Build a family summary from reviewed metadata and approved actions."""
 
 from dataclasses import asdict, dataclass
 from pathlib import Path

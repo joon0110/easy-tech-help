@@ -1,4 +1,4 @@
-"""Local analysis -> retrieved evidence -> generated explanation with a checked citation."""
+"""Analyze text, retrieve references, and select a quoted explanation."""
 
 import argparse
 import json
@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from easy_tech_help.analysis import DEFAULT_MODEL, LocalModelError, _load_runtime
 from easy_tech_help.config import load_settings
 from easy_tech_help.observation_review import review_observation
+from easy_tech_help.reference_relevance import explanation_topic, relevance_score
 from easy_tech_help.retrieval import (
     DEFAULT_KNOWLEDGE_DIR,
     GENERIC_TERMS,
@@ -100,6 +101,8 @@ class RagResult:
     raw_observation: TextObservation | None = None
     analysis_adjustments: list[str] = field(default_factory=list)
     explanation_mode: str = "extractive"
+    analysis_generation: dict | None = None
+    reference_topic: str | None = None
 
     @property
     def message(self) -> str:
@@ -119,6 +122,8 @@ class RagResult:
             else None,
             "analysis_adjustments": self.analysis_adjustments,
             "explanation_mode": self.explanation_mode,
+            "analysis_generation": self.analysis_generation,
+            "reference_topic": self.reference_topic,
         }
 
 
@@ -139,7 +144,12 @@ def retrieve_references(
     references = []
     for index, hit in enumerate(
         search_chunks(
-            text, expansion=expansion, category=category, directory=directory
+            text,
+            expansion=expansion,
+            category=category,
+            directory=directory,
+            limit=18,
+            per_document_limit=6,
         ),
         1,
     ):
@@ -218,8 +228,7 @@ def reference_sentences(reference: Reference, query: str = "") -> list[str]:
     if query:
         terms = set(_chunk_terms(query))
 
-        # Rank against the original input, not potentially mistaken model labels.
-        # Stable ties retain source order.
+        # Rank by input terms; preserve source order for ties.
         def relevance(sentence):
             shared = terms & set(_chunk_terms(sentence))
             return sum(0.2 if term in GENERIC_TERMS else 1.0 for term in shared)
@@ -229,7 +238,10 @@ def reference_sentences(reference: Reference, query: str = "") -> list[str]:
 
 
 def build_rag_messages(
-    text: str, observation: TextObservation, references: list[Reference]
+    text: str,
+    observation: TextObservation,
+    references: list[Reference],
+    options: dict[str, list[str]] | None = None,
 ) -> list[dict[str, str]]:
     return [
         {"role": "system", "content": RAG_PROMPT},
@@ -247,7 +259,10 @@ def build_rag_messages(
                             "sentences": [
                                 {"id": i, "text": sentence}
                                 for i, sentence in enumerate(
-                                    reference_sentences(r, text), 1
+                                    options[r.source_id]
+                                    if options is not None
+                                    else reference_sentences(r, text),
+                                    1,
                                 )
                             ],
                         }
@@ -272,8 +287,12 @@ def explain_text(
         if runtime is None:
             settings = load_settings()
             runtime = _load_runtime(model, settings.adapter_dir, settings.device)
-        raw_observation, _ = runtime.analyze(text)
-        observation, adjustments = review_observation(text, raw_observation)
+        raw_observation, analysis_generation = runtime.analyze(text)
+        observation, adjustments = review_observation(
+            text,
+            raw_observation,
+            analysis_generation.text if analysis_generation else None,
+        )
     except (ImportError, OSError, RuntimeError, ValueError) as exc:
         raise LocalModelError(f"Local text analysis could not run: {exc}") from exc
     if observation.category == "unknown" or observation.issues:
@@ -282,6 +301,9 @@ def explain_text(
             "uncertain_analysis",
             raw_observation=raw_observation,
             analysis_adjustments=adjustments,
+            analysis_generation=asdict(analysis_generation)
+            if analysis_generation
+            else None,
         )
     try:
         references = retrieve_references(text, observation, directory)
@@ -291,6 +313,9 @@ def explain_text(
             "knowledge_unavailable",
             raw_observation=raw_observation,
             analysis_adjustments=adjustments,
+            analysis_generation=asdict(analysis_generation)
+            if analysis_generation
+            else None,
         )
     result = RagResult(
         observation,
@@ -298,17 +323,41 @@ def explain_text(
         retrieved=references,
         raw_observation=raw_observation,
         analysis_adjustments=adjustments,
+        analysis_generation=asdict(analysis_generation)
+        if analysis_generation
+        else None,
     )
     if not references:
         return result
-    # A small local model mixed facts across excerpts while citing only one.
-    # Keep candidates in the trace, but ground this short answer in the top hit.
-    selected = [r for r in references if reference_sentences(r)][:1]
+    topic = explanation_topic(text, observation)
+    result.reference_topic = topic
+    if topic == "none":
+        result.retrieved = []
+        return result
+    # Search a larger pool, then offer only topic-compatible literal units.
+    # The model may select a unit or abstain; lexical hits alone are insufficient.
+    options = {
+        r.source_id: sorted(
+            [
+                s
+                for s in reference_sentences(r, text)
+                if relevance_score(topic, s, text)
+            ],
+            key=lambda s: relevance_score(topic, s, text),
+            reverse=True,
+        )[:3]
+        for r in references
+    }
+    selected = sorted(
+        [r for r in references if options[r.source_id]],
+        key=lambda r: relevance_score(topic, options[r.source_id][0], text),
+        reverse=True,
+    )[:1]
     if not selected:
         return result
     try:
         generation = runtime.generate_grounded(
-            build_rag_messages(text, observation, selected)
+            build_rag_messages(text, observation, selected, options)
         )
     except (OSError, RuntimeError, ValueError):
         result.status = "generation_unavailable"
@@ -329,7 +378,7 @@ def explain_text(
         reference = next((r for r in selected if r.source_id == draft.source_id), None)
         if reference is None or not draft.sentence_id:
             raise ValueError("Citation must identify an actually retrieved excerpt")
-        sentences = reference_sentences(reference, text)
+        sentences = options[reference.source_id]
         if draft.sentence_id > len(sentences):
             raise ValueError("Select an actual provided sentence ID")
         quotes = [sentences[draft.sentence_id - 1]]

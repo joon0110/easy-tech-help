@@ -1,4 +1,4 @@
-"""Deterministic, source-checked next actions; model prose is never executable policy."""
+"""Choose fixed next actions and check their local source support."""
 
 import re
 from dataclasses import asdict, dataclass
@@ -6,10 +6,23 @@ from pathlib import Path
 from types import MappingProxyType
 from urllib.parse import urlsplit
 
+from easy_tech_help.input_signals import (
+    PATTERNS as GUARDS,
+)
+from easy_tech_help.input_signals import (
+    active_context as _active_context,
+)
+from easy_tech_help.input_signals import (
+    link_needs_check,
+    literal_cues,
+    notification_only_signal,
+    settings_update,
+)
 from easy_tech_help.rag import RagResult
+from easy_tech_help.reference_relevance import relevance_score
 from easy_tech_help.retrieval import DEFAULT_KNOWLEDGE_DIR, load_documents
 
-POLICY_VERSION = "1"
+POLICY_VERSION = "2"
 
 
 @dataclass(frozen=True)
@@ -140,17 +153,6 @@ class Guidance:
         return asdict(self)
 
 
-INACTIVE = re.compile(
-    r"\b(?:yesterday|previously|earlier|example|lesson|article|hypothetical)\b",
-    re.IGNORECASE,
-)
-CLAUSE_BOUNDARY = re.compile(r"[.!?;\n]")
-GUARDS = {
-    "credential_request": r"\b(?:enter|send|share|provide|submit|type)\s+(?:me\s+)?(?:your|the)\s+(?:(?:account|login|email|apple)\s+)?password\b",
-    "verification_code_request": r"\b(?:enter|send|share|provide|reply with)\s+(?:me\s+)?(?:your|the)\s+(?:(?:login|verification|security|one.time)\s+)+code\b",
-    "payment_request": r"\b(?:pay|send|transfer)\s+(?:me\s+)?(?:[$£€]\s*\d|\d+\s*(?:dollars?|pounds?|euros?)|money\b)|\b(?:buy|pay with|send)\s+(?:a\s+|the\s+)?gift cards?\b",
-    "remote_access_request": r"\b(?:allow|enable|grant|give)\b.{0,45}\b(?:remote access|remote control|screen sharing)\b",
-}
 SENSITIVE = {
     "credential_request",
     "verification_code_request",
@@ -165,33 +167,22 @@ CONCERN = SENSITIVE | {
 }
 
 
-def _active_context(text: str, start: int, end: int) -> bool:
-    left = max((m.end() for m in CLAUSE_BOUNDARY.finditer(text, 0, start)), default=0)
-    span = text[start:end]
-    verb = re.search(
-        r"\b(?:enter|send|share|provide|submit|type|reply|pay|transfer|buy|allow|enable|grant|give|install)\b",
-        span,
-        re.IGNORECASE,
-    )
-    cue = start + verb.start() if verb else start
-    prefix = re.sub(r"https?://\S+", "", text[left:cue]).replace("’", "'")
-    if INACTIVE.search(prefix):
-        return False
-    if re.search(
-        r"\b(?:never|not|don't|avoid|no need to)\s+(?:\w+\s+){0,3}$",
-        prefix,
-        re.IGNORECASE,
-    ):
-        return False
-    # Full evidence spans can include a noncurrent introduction.
-    return not INACTIVE.match(span.strip())
-
-
 def policy_flags(text: str, result: RagResult) -> tuple[set[str], list[str]]:
-    """Conservative cues supplement fallible extraction; no scam verdict is made."""
+    """Combine reviewed observations with literal request cues."""
     flags, reasons = set(), []
+    cues = literal_cues(text)
     for signal in result.observation.signals:
         start = text.find(signal.evidence)
+        if notification_only_signal(text, signal.signal, signal.evidence, cues):
+            reasons.append("ignored_code_notification")
+            continue
+        if (
+            signal.signal == "install_request"
+            and settings_update(text)
+            and not SENSITIVE.intersection(cues)
+        ):
+            reasons.append("reported_settings_update_not_untrusted_install")
+            continue
         if (
             signal.signal == "credential_request"
             and result.observation.category == "wifi"
@@ -216,21 +207,10 @@ def policy_flags(text: str, result: RagResult) -> tuple[set[str], list[str]]:
             flags.add(signal.signal)
         else:
             reasons.append(f"ignored_noncurrent_signal:{signal.signal}")
-    for name, pattern in GUARDS.items():
-        for match in re.finditer(pattern, text, re.IGNORECASE):
-            if not _active_context(text, match.start(), match.end()):
-                continue
-            if (
-                name == "credential_request"
-                and re.search(r"\b(?:wi-?fi|network|router)\b", text, re.IGNORECASE)
-                and not re.search(
-                    r"\b(?:account|login|email|apple)\b", match.group(), re.IGNORECASE
-                )
-            ):
-                continue
-            if name not in flags:
-                reasons.append(f"input_guard:{name}")
-            flags.add(name)
+    for name in literal_cues(text):
+        if name not in flags:
+            reasons.append(f"input_guard:{name}")
+        flags.add(name)
     return flags, reasons
 
 
@@ -330,7 +310,9 @@ def build_guidance(
             ids.append("wifi_check")
             if "no_internet" in flags:
                 ids.append("wifi_compare")
-    elif flags & CONCERN:
+    elif flags & (CONCERN - {"visible_link"}) or (
+        "visible_link" in flags and link_needs_check(text)
+    ):
         level, summary = (
             "check_source",
             "Check where this request came from before following it. A link or update notice alone is not proof of a scam.",
@@ -403,6 +385,10 @@ def displayable_reference(result: RagResult) -> str:
     guard, not the mechanism that authorizes actions.
     """
     if result.status != "answered" or not result.citations:
+        return ""
+    if result.reference_topic and any(
+        not relevance_score(result.reference_topic, c.quote) for c in result.citations
+    ):
         return ""
     if result.explanation != "\n\n".join(c.quote for c in result.citations) or any(
         c.reference not in result.retrieved or c.quote not in c.reference.excerpt

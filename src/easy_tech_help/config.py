@@ -1,4 +1,4 @@
-"""Read optional configuration for the local-only application."""
+"""Load local model paths and device settings."""
 
 import os
 from dataclasses import dataclass

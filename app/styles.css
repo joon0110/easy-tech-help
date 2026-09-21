@@ -6,7 +6,7 @@
   --eth-font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .stApp { background: #fff; color: var(--eth-ink); font-family: var(--eth-font); }
-[data-testid="stHeader"] { background: transparent; }
+[data-testid="stHeader"] { display: none; }
 [data-testid="stToolbar"] { display: none; }
 .stMainBlockContainer { max-width: 820px; padding: 2.5rem 2rem 2rem; }
 .eth-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: 1.4rem; border-bottom: 1px solid var(--eth-line); margin-bottom: 2.7rem; }
@@ -45,6 +45,9 @@ div[data-baseweb="notification"] { box-shadow: none; }
 /* Risk is always written in words; color is secondary. */
 .st-key-assessment [data-testid="stAlert"] { background: #f6f6f3; color: #30302c; border-left: 3px solid #99998f; border-radius: 8px; }
 .st-key-assessment [data-testid="stAlert"]:has([data-testid="stAlertContentWarning"]) { background: #fcf6e9; color: #57421f; border-left-color: #98702b; }
+.st-key-assessment [data-testid="stAlertContentWarning"] { color: #57421f; }
+.st-key-assessment [data-testid="stMarkdownContainer"] p { color: #30302c; }
+.st-key-assessment [data-testid="stAlertContainer"]:has([data-testid="stAlertContentWarning"]) { background: #fcf6e9; }
 .st-key-next_steps { border-left: 2px solid #252525; padding-left: 1.15rem; margin: 0.2rem 0 0.6rem; }
 [data-testid="stExpander"] { border-color: var(--eth-line); border-radius: 12px; }
 [data-testid="stExpander"] summary { min-height: 54px; padding: 0.8rem 1rem; }

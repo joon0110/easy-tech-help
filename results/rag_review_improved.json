@@ -1,0 +1,149 @@
+{
+  "scope": "Assistant qualitative review of all 24 frozen challenge outputs after fixes; not blinded independent semantic scoring. No binary semantic-accuracy metric is claimed.",
+  "cases": [
+    {
+      "id": "otp_paraphrase",
+      "status": "answered",
+      "displayed_reference": "Scammers send fake text messages to trick you into giving them your personal information \u2014 things like your password, account number, or Social Security number.",
+      "review": "General personal-information theft context; does not independently establish that this sender is fraudulent."
+    },
+    {
+      "id": "password_paraphrase",
+      "status": "answered",
+      "displayed_reference": "Scammers use email or text messages to try to steal your passwords, account numbers, or Social Security numbers.",
+      "review": "Password theft directly relates to the requested secret; unrelated billing example removed."
+    },
+    {
+      "id": "gift_card_photos",
+      "status": "answered",
+      "displayed_reference": "Never pay someone who insists that you can only pay with cryptocurrency , a wire transfer service like Western Union or MoneyGram, a payment app , or a gift card .",
+      "review": "Gift-card payment guidance relates to the requested payment; the source also lists other payment methods."
+    },
+    {
+      "id": "normal_code_notice",
+      "status": "insufficient_evidence",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "delivery_small_fee",
+      "status": "insufficient_evidence",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "ordinary_library_link",
+      "status": "insufficient_evidence",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "past_and_current_request",
+      "status": "answered",
+      "displayed_reference": "Scammers send fake text messages to trick you into giving them your personal information \u2014 things like your password, account number, or Social Security number.",
+      "review": "Explains the current disclosure request without presenting the historical sentence as current."
+    },
+    {
+      "id": "private_details",
+      "status": "answered",
+      "displayed_reference": "Scammers send fake text messages to trick you into giving them your personal information \u2014 things like your password, account number, or Social Security number.",
+      "review": "General disclosure context; input secrets are not included in the family summary."
+    },
+    {
+      "id": "remote_screen_popup",
+      "status": "answered",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "browser_install",
+      "status": "answered",
+      "displayed_reference": "A warning, prize, or technical-support phone number displayed by a webpage is not proof that the phone is infected.",
+      "review": "Webpage warning is not proof of infection; does not tell the user to install software."
+    },
+    {
+      "id": "browser_support_number",
+      "status": "answered",
+      "displayed_reference": "A warning, prize, or technical-support phone number displayed by a webpage is not proof that the phone is infected.",
+      "review": "Addresses a webpage support-number claim without suggesting calling it."
+    },
+    {
+      "id": "settings_update_control",
+      "status": "insufficient_evidence",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "ordinary_alarm",
+      "status": "insufficient_evidence",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "ordinary_calendar_link",
+      "status": "insufficient_evidence",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "ordinary_permission",
+      "status": "insufficient_evidence",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "injected_payment_popup",
+      "status": "insufficient_evidence",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "wifi_disabled",
+      "status": "answered",
+      "displayed_reference": "If an iPhone cannot connect to Wi-Fi, open Settings, Wi-Fi and check that Wi-Fi is on.",
+      "review": "Matches the described Wi-Fi off state."
+    },
+    {
+      "id": "airplane_wifi_working",
+      "status": "answered",
+      "displayed_reference": "A blue checkmark beside a network name indicates that the phone joined that network; it does not by itself prove that internet access works.",
+      "review": "Explains joining versus internet access without telling the user to disable intentional Airplane Mode."
+    },
+    {
+      "id": "known_wifi_password",
+      "status": "answered",
+      "displayed_reference": "Ask the network owner or administrator for the password when you do not know it.",
+      "review": "Known-network owner/password context; no account credential forwarding."
+    },
+    {
+      "id": "wifi_no_access",
+      "status": "answered",
+      "displayed_reference": "For a No Internet Connection message, try the same network on another device to see whether the problem is limited to the iPhone.",
+      "review": "Addresses the no-internet symptom and comparison on the same network."
+    },
+    {
+      "id": "public_unsecured",
+      "status": "answered",
+      "displayed_reference": "Look for a lock symbol or https in the address bar to the left of the website address. This works on a mobile browser, too. It can be hard to tell if a mobile app uses encryption, but the majority do.",
+      "review": "HTTPS encryption check; application caution separately says this does not verify the website or network."
+    },
+    {
+      "id": "normal_wifi_working",
+      "status": "answered",
+      "displayed_reference": "A blue checkmark beside the network name and a Wi-Fi icon indicate that the iPhone has joined.",
+      "review": "Explains joined state instead of listing unrelated home devices."
+    },
+    {
+      "id": "too_little_context",
+      "status": "uncertain_analysis",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    },
+    {
+      "id": "unsupported_android",
+      "status": "uncertain_analysis",
+      "displayed_reference": "",
+      "review": "No reference explanation displayed; fixed action guidance and its separate support remain available when applicable."
+    }
+  ]
+}

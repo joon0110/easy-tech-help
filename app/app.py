@@ -1,4 +1,4 @@
-"""A readable, local text-help interface built around one task at a time."""
+"""Streamlit interface for text-based phone help."""
 
 from pathlib import Path
 
@@ -119,7 +119,11 @@ def show_result(product) -> None:
     st.button("Start a new check", key="start_over", on_click=start_over)
 
 
-st.set_page_config(page_title="EasyTechHelp", page_icon="◦", layout="centered")
+st.set_page_config(
+    page_title="EasyTechHelp",
+    page_icon=Path(__file__).with_name("favicon.svg"),
+    layout="centered",
+)
 st.html(Path(__file__).with_name("styles.css"))
 st.html(
     '<header class="eth-header">'

@@ -1,0 +1,155 @@
+{
+  "created_at": "2026-09-21T21:56:38.402Z",
+  "scope": "Initial product page only; automated Chrome accessibility scan, not certification or a screen-reader user study.",
+  "checks": [
+    {
+      "width": 1440,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".eth-brand"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+            },
+            {
+              "target": [
+                ".eth-local"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "button-name",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "meta-viewport",
+        "nested-interactive"
+      ],
+      "overflow": {
+        "document": false,
+        "app": false
+      }
+    },
+    {
+      "width": 390,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".eth-brand"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+            },
+            {
+              "target": [
+                ".eth-local"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "button-name",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "meta-viewport",
+        "nested-interactive"
+      ],
+      "overflow": {
+        "document": false,
+        "app": false
+      }
+    },
+    {
+      "width": 320,
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".eth-brand"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+            },
+            {
+              "target": [
+                ".eth-local"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element"
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "button-name",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "meta-viewport",
+        "nested-interactive"
+      ],
+      "overflow": {
+        "document": false,
+        "app": false
+      }
+    }
+  ],
+  "ui_sha256": {
+    "app/app.py": "ea3c27362aa827f898cd734b8ce99ae2d8c1a09780524a3614d96f777ed874aa",
+    "app/styles.css": "9596e494ff4b0397c25dde490a3873cf03ff4f2c03b62159f16707bdc062345a",
+    ".streamlit/config.toml": "a177e3251e1e22fe267e8c6c98005e06cf74f5682e2fbe04f3c0bcab4c48e771"
+  }
+}

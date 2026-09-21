@@ -1,0 +1,20 @@
+{
+  "created_at": "2026-09-21T22:54:59.301Z",
+  "scope": "Chrome with actual local PyTorch model; one sensitive-request example, not a usability study",
+  "checks": {
+    "empty_input": true,
+    "example_without_inference": true,
+    "actual_model_result": true,
+    "official_source_urls": true,
+    "copy_without_hover": true,
+    "exact_clipboard": true,
+    "exact_download": true,
+    "reset": true,
+    "mobile_390_and_320_no_overflow": true,
+    "no_javascript_errors": true
+  },
+  "result_accessibility": {
+    "violations": [],
+    "incomplete": []
+  }
+}

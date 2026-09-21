@@ -1,0 +1,41 @@
+{
+  "scope": "Targeted raw-generation rerun of two invalid challenge outputs; no tuning or label changes.",
+  "cases": [
+    {
+      "id": "private_details",
+      "input": "Text from Mara Testington at +1-202-555-0174: Send your account password PineMoth!73 and your verification code 684219 to mara.private@example.net or https://private-check.example/token-83.",
+      "observation": {
+        "category": "unknown",
+        "signals": [],
+        "issues": [
+          "invalid_model_output"
+        ]
+      },
+      "generation": {
+        "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"credential_request\", \"evidence\": \"Send your account password PineMoth!73 and your verification code 684219\"}, {\"signal\": \"verification_code_request\", \"evidence\": \"Send your verification code 684219\"}], \"issues\": []}",
+        "complete": true,
+        "tokens": 75,
+        "seconds": 4.063613541889936
+      },
+      "validation_error": "1 validation error for TextObservation\n  Value error, evidence must quote the actual input text [type=value_error, input_value={'category': 'message', '...684219'}], 'issues': []}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+    },
+    {
+      "id": "wifi_no_access",
+      "input": "My iPhone shows a blue checkmark next to my home Wi-Fi network and No Internet Connection.",
+      "observation": {
+        "category": "unknown",
+        "signals": [],
+        "issues": [
+          "invalid_model_output"
+        ]
+      },
+      "generation": {
+        "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_connected\", \"evidence\": \"connected\"}, {\"signal\": \"no_internet\", \"evidence\": \"No Internet Connection\"}], \"issues\": []}",
+        "complete": true,
+        "tokens": 47,
+        "seconds": 2.6223483751527965
+      },
+      "validation_error": "1 validation error for TextObservation\n  Value error, evidence must quote the actual input text [type=value_error, input_value={'category': 'wifi', 'sig...ection'}], 'issues': []}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+    }
+  ]
+}

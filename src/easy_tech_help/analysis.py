@@ -95,10 +95,14 @@ def analyze_text(text: str, *, model: str = DEFAULT_MODEL) -> TextObservation:
             return TextObservation.unknown("invalid_model_output")
         if response.get("done") is not True or response.get("done_reason") != "stop":
             return TextObservation.unknown("incomplete_model_output")
-        observation = TextObservation.model_validate_json(
-            response["message"]["content"], context={"input_text": text}
-        )
-        return review_observation(text, observation)[0]
+        content = response["message"]["content"]
+        try:
+            observation = TextObservation.model_validate_json(
+                content, context={"input_text": text}
+            )
+        except ValueError:
+            observation = TextObservation.unknown("invalid_model_output")
+        return review_observation(text, observation, content)[0]
     except (KeyError, TypeError, ValueError):
         return TextObservation.unknown("invalid_model_output")
 
