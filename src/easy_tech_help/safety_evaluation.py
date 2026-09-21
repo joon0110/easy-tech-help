@@ -76,6 +76,19 @@ def main() -> int:
                 else not ACTIONS[a.id].document_id
                 for a in guidance.next_actions
             ),
+            "handoff_ready": result.family_handoff.status == "ready",
+            "handoff_preserves_reviewed_actions": (
+                result.family_handoff.action_ids
+                == tuple(a.id for a in guidance.next_actions)
+                and all(
+                    a.text in result.family_handoff.text for a in guidance.next_actions
+                )
+            ),
+            "handoff_does_not_claim_completion": (
+                "Actions already taken: not recorded. Resolution: not confirmed."
+                in result.family_handoff.text
+            ),
+            "handoff_does_not_copy_input": text not in result.family_handoff.text,
         }
         rows.append(
             {
@@ -111,6 +124,7 @@ def main() -> int:
             for name in (
                 "safety.py",
                 "guidance.py",
+                "handoff.py",
                 "safety_evaluation.py",
                 "rag.py",
                 "retrieval.py",

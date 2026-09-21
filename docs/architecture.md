@@ -17,6 +17,7 @@ Streamlit text area / CLI --text or --file
   -> validated IDs, literal explanation and official URL resolved from the corpus
   -> deterministic safety policy and independently checked action support
   -> summary, cautions, allowed next steps, avoid actions and sources
+  -> optional family summary from reviewed metadata and rechecked actions
 ```
 
 `analysis.py` lazily caches a `LocalRuntime`. Transformers and PEFT load local files only; inference needs no model server or API key. Runtime checks the completed training manifest, model revision and prompt fingerprint before loading the adapter. It does not silently substitute the base model. The model has no tools and cannot browse, follow links or operate a phone. The app does not save inputs.
@@ -64,7 +65,21 @@ Allowed Wi-Fi actions check current state, compare another device on the same kn
 
 `safety_evaluation.py` runs twelve local-model development cases through analysis, RAG and policy. It checks decision levels, appropriate actions, template identity, prohibited-action exclusion and literal source support. Unit tests cover missing/altered sources, normal/negated/historical cases, all prohibited IDs and injection through input/model/source content. These checks constrain output behavior; independent real-world classification, relevance and usability evaluation is still necessary. See [stage 5 results](../results/safety.md).
 
-Family summaries remain a later step and must use only the reviewed result, excluding private credentials and unnecessary personal details.
+## Stage 6 family handoff
+
+`guidance.py` calls `handoff.build_handoff(category, guidance, directory)` after the safety policy. The builder accepts no raw input or RAG result. Fixed English templates describe the category, known policy flags and assessment level; free-text summary/caution/reason fields are ignored. It resolves the action IDs against the local corpus again and compares complete action/evidence objects. Unknown metadata, altered instructions, mismatched evidence status or unavailable source support produce a generic fallback without source claims.
+
+The handoff includes only approved actions and their supporting official links, not every retrieved document. It labels Apple-based summaries, marks identified cues as unverified, and never claims the user completed steps or resolved the issue. Original messages, names, network identifiers, contact details and credentials cannot enter through the input or model prose. The trusted local policy and corpus remain the authority for action wording and source URLs.
+
+`FamilyHandoff` contains status, suggestion flag, text, action IDs and source document IDs. Sensitive/source-check/uncertain results suggest seeking help; ordinary and Wi-Fi results leave it optional. Streamlit displays a plain code block with its native copy control and a text-file download inside an optional expander. Copying and downloading do not call the model or send a message. CLI `--family-summary` prints only this text; ordinary JSON retains diagnostic data and is unsuitable for direct sharing.
+
+## Product interface
+
+`app/app.py` keeps the draft, last checked text, reviewed product result and current error in per-session Streamlit state. Example callbacks fill a draft without inference. Submission clears the prior result before attempting a new check, preserving the draft on errors. A reset callback removes stored results and checked text and clears the draft. Form drafts and the text used for a result are explicitly distinguished. No global user-result cache or persisted input history is added.
+
+The UI renders headings and labels from application constants. Input quotes use plain text; only static layout markup and the local stylesheet enter `st.html`. Next actions still come from the safety policy, references still pass the existing display guard, and download/copy contents use only `family_handoff.text`. Developer JSON is exposed through the diagnostic CLI rather than the product page. `.streamlit/config.toml` sets the light theme and disables usage statistics; `app/styles.css` supplies responsive spacing, readable type and visible keyboard focus using local fonts.
+
+Tests cover private input, malicious model prose, tampered actions and sources, missing evidence, completion claims, CLI isolation and Streamlit rendering. The existing product evaluator also checks handoff consistency on twelve live local-model cases. Neither these checks nor the fixed templates establish classification accuracy or usability with older adults. See [stage 6 results](../results/handoff.md).
 
 ## Data and provenance
 
@@ -130,7 +145,8 @@ Keep test failures for reporting; do not tune on them and continue calling them 
 | `retrieval.py`, `knowledge/` | Local corpus, literal chunks and BM25 search |
 | `rag.py`, `rag_evaluation.py` | Retrieval-augmented explanations, citation validation and development checks |
 | `safety.py`, `guidance.py`, `safety_evaluation.py` | Fixed action policy, source checks, product API/CLI and product development evaluation |
+| `handoff.py` | Family summary from reviewed metadata, rechecked actions and official links |
 | `results/` | Training metadata and measured evaluation results |
 | `artifacts/` | Ignored downloads, SFT exports and model weights |
 
-The initial action safety policy is implemented. Family handoff, independent evaluation and further usability work remain; model recall and semantic relevance still need improvement.
+The initial action safety policy and family handoff are implemented. Independent evaluation and further usability work remain; model recall and semantic relevance still need improvement.

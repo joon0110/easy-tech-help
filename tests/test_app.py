@@ -45,7 +45,7 @@ def test_form_submits_text_and_shows_validated_result(monkeypatch):
     assert any("Next steps" == s.value for s in app.subheader)
     assert any("route you open yourself" in t.value for t in app.text)
     assert app.get("link_button")[0].proto.url.startswith("https://consumer.ftc.gov/")
-    assert len(app.json) == 1
+    assert len(app.json) == 0  # Diagnostic JSON is available through the CLI.
 
 
 def test_model_failure_is_displayed_without_app_crash(monkeypatch):
@@ -57,7 +57,8 @@ def test_model_failure_is_displayed_without_app_crash(monkeypatch):
     app.text_area[0].input("iPhone Wi-Fi is off.").run()
     app.button[0].click().run()
     assert not app.exception
-    assert app.error[0].value == "Local PyTorch adapter is missing"
+    assert "Your text is still here" in app.error[0].value
+    assert app.text_area[0].value == "iPhone Wi-Fi is off."
     assert len(app.json) == 0
 
 
@@ -168,3 +169,83 @@ def test_sensitive_request_shows_attention_next_steps_and_avoid_actions(monkeypa
         {h.value for h in app.subheader}
     )
     assert any("Do not share account passwords" in t.value for t in app.text)
+    assert len(app.code) == 1
+    assert "Family help request" in app.code[0].value
+    assert "Actions already taken: not recorded" in app.code[0].value
+    assert text not in app.code[0].value
+    assert any("Nothing is sent automatically" in c.value for c in app.caption)
+
+
+def test_example_fills_input_without_running_the_model(monkeypatch):
+    def unexpected_call(*args, **kwargs):
+        raise AssertionError("Choosing an example must not run inference")
+
+    monkeypatch.setattr(guidance, "explain_text", unexpected_call)
+    app = AppTest.from_file(str(APP)).run()
+    app.button(key="example_Wi-Fi problem").click().run()
+    assert not app.exception
+    assert "No Internet Connection" in app.text_area[0].value
+    assert not app.code
+
+
+def test_empty_input_does_not_run_inference(monkeypatch):
+    def unexpected_call(*args, **kwargs):
+        raise AssertionError("Empty input must not load a model")
+
+    monkeypatch.setattr(guidance, "explain_text", unexpected_call)
+    app = AppTest.from_file(str(APP)).run()
+    app.button[0].click().run()
+    assert not app.exception
+    assert "Please enter text" in app.error[0].value
+    assert not app.code
+
+
+def test_rerun_preserves_result_and_reset_clears_private_session_data(monkeypatch):
+    calls = []
+
+    def explain(text, **kwargs):
+        calls.append(text)
+        return RagResult(
+            TextObservation(category="message", signals=[], issues=[]),
+            "insufficient_evidence",
+        )
+
+    monkeypatch.setattr(guidance, "explain_text", explain)
+    app = AppTest.from_file(str(APP)).run()
+    app.text_area[0].input("Send your verification code.").run()
+    app.button[0].click().run()
+    summary = app.code[0].value
+    app.run()
+    assert app.code[0].value == summary
+    assert len(calls) == 1
+    app.text_area[0].input("A different draft.").run()
+    assert app.session_state["checked_text"] == calls[0]
+    app.button(key="start_over").click().run()
+    assert not app.exception
+    assert app.text_area[0].value == ""
+    assert not app.code
+    assert not app.error
+    assert "product" not in app.session_state
+    assert "checked_text" not in app.session_state
+    assert len(calls) == 1
+
+
+def test_failed_second_check_never_shows_the_previous_summary(monkeypatch):
+    def explain(text, **kwargs):
+        if text == "Second message":
+            raise analysis.LocalModelError("Private model path")
+        return RagResult(
+            TextObservation(category="message", signals=[], issues=[]),
+            "insufficient_evidence",
+        )
+
+    monkeypatch.setattr(guidance, "explain_text", explain)
+    app = AppTest.from_file(str(APP)).run()
+    app.text_area[0].input("First message").run()
+    app.button[0].click().run()
+    assert app.code
+    app.text_area[0].input("Second message").run()
+    app.button[0].click().run()
+    assert app.error
+    assert not app.code
+    assert "Private model path" not in app.error[0].value

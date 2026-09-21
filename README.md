@@ -11,17 +11,17 @@ My grandmother lives alone, and helping with confusing phone messages remotely c
 | Component | Status |
 | --- | --- |
 | Python package, configuration, pytest, Ruff | Implemented |
-| Text input in Streamlit and CLI | Implemented |
+| Text input in Streamlit and CLI | Implemented; white responsive UI, examples, retained results and clear/reset flow |
 | Local text model → validated category, signals, quoted evidence | Implemented |
 | English labeled text examples and SFT export | 200 examples: 120 synthetic + 80 redacted public SMS; source/coverage/leakage/token checks |
 | Local reference corpus and chunk retrieval | Implemented; 6 FTC originals + 4 Apple-based summaries, sentence-aware chunks and BM25 |
 | RAG-connected explanation and source display | Implemented in Streamlit and CLI; retrieved excerpts, catalog URLs and explicit abstention |
 | Cautions and code-controlled next actions | Implemented: fixed action catalog, local support checks, prohibited-action exclusion and uncertainty fallback |
-| Family handoff summary | Planned |
+| Family handoff summary | Implemented: reviewed actions, private details omitted, copy control and CLI export |
 | PyTorch training and inference | Implemented: Qwen2.5 1.5B + PEFT LoRA on MPS/CPU |
 | Baseline evaluation and fine-tuning comparison | Completed; [current results](results/improvement.md) and [first-run history](results/README.md); signal errors remain |
 
-The current app shows **reviewed observations, cautions, next steps, actions to avoid and official sources**. Model-selected reference text is extractive and receives an additional display check. All next steps come from fixed application templates, with local supporting evidence checked before use. Raw predictions and application corrections remain in diagnostic traces. Family handoff is not implemented yet. Input is not automatically saved or added to training data. Raw adapter observation matches remain 20/34 development and 23/34 regression; public-SMS extraction remains weak. See [stage 5 safety results](results/safety.md), [grounding improvements](results/rag_improvement.md) and [analysis results](results/improvement.md).
+The current app shows **reviewed observations, cautions, next steps, actions to avoid, official sources and an optional family summary**. Model-selected reference text is extractive and receives an additional display check. All next steps come from fixed application templates, with local supporting evidence checked before use. Raw predictions and application corrections remain in diagnostic traces. Family summaries use reviewed metadata and approved actions, excluding raw input and model prose. Input is not automatically saved or added to training data. Raw adapter observation matches remain 20/34 development and 23/34 regression; public-SMS extraction remains weak. See [family handoff checks](results/handoff.md), [stage 5 safety results](results/safety.md), [grounding improvements](results/rag_improvement.md) and [analysis results](results/improvement.md).
 
 ## Intended V1 flow
 
@@ -160,6 +160,38 @@ python -m easy_tech_help.safety_evaluation --device mps --output results/safety_
 
 The twelve assistant-authored cases include the eight existing RAG inputs plus remote-access, prompt-injection/payment, negated-password and receipt controls. This is development evidence, not a real-world safety certification. [Results, policy decisions and remaining limits](results/safety.md).
 
+## Stage 6: family handoff
+
+After analysis, open **Ask family for help** and use the visible copy icon at the top right of the summary, or **Save summary (.txt)**. The panel stays collapsed until opened; its wording suggests help for sensitive requests, source-check cases and uncertain guidance. Review the summary before sharing. The app does not send messages.
+
+`handoff.py` assembles an English summary from the reviewed category, policy flags and approved actions. It includes the described situation, what was checked, next steps, help needed and the official sources supporting those steps. It explicitly says actions taken and resolution are unknown. A connection problem is not presented as proof of a scam.
+
+Raw input, input quotes, model prose and free-text guidance fields never enter this summary. Names, contact details, network names, passwords, codes and user-provided links are therefore omitted, rather than passed through a pattern-based redactor. Actions and evidence are rechecked against the local catalog before sharing; mismatches fall back to a generic help request. Apple-based summaries remain labeled. This preserves the policy boundary but cannot correct an upstream classification error.
+
+Export only the shareable text from the CLI:
+
+```bash
+python -m easy_tech_help.guidance --text "My iPhone Wi-Fi is off." --family-summary
+```
+
+Without `--family-summary`, CLI JSON is a diagnostic record that includes raw analysis and may contain private input. Share the dedicated summary, not the entire diagnostic record.
+
+Re-run the full local model → RAG → safety → handoff development checks:
+
+```bash
+python -m easy_tech_help.safety_evaluation --device mps --output results/handoff_development.json
+```
+
+See [stage 6 results and limitations](results/handoff.md). No new model training is required for this deterministic sharing step.
+
+## Product interface
+
+The English interface uses a white background, dark text, local system fonts and a single readable column. It includes a large labeled input, three example buttons that fill the draft without running inference, one primary action, and plain-language loading/error states. Next steps and actions to avoid remain visible; supporting details, sources and family sharing can be opened when needed. Technical JSON remains available through the CLI.
+
+Results stay in the current Streamlit session across reruns. **Text used for this check** distinguishes a completed check from a subsequently edited draft. **Start a new check** clears the input, result and error from application session state. A failed new check removes the previous result and keeps the draft for retry. No input history is written to disk. Family summaries can be copied or explicitly downloaded by the user.
+
+Theme settings are in `.streamlit/config.toml`; layout and responsive styles are in `app/styles.css`. Streamlit 1.64+ is required. [Interface checks and previews](results/interface.md) cover real local-model submission, official links, clipboard, downloads and mobile layouts. Usability testing with older adults remains necessary.
+
 ## Validation and limits
 
 ```bash
@@ -184,9 +216,8 @@ Active evaluation data lives in [data/text/validation.jsonl](data/text/validatio
 
 | Order | Work | Difficulty (1–5) |
 | --- | --- | ---: |
-| 1 | Build family handoff from the reviewed guidance result | 3 |
-| 2 | Finish and usability-test the readable product interface | 3 |
-| 3 | Add independent contemporary cases and evaluate the complete guidance pipeline; improve training from reviewed failures | 5 |
-| 4 | Publish demo/results/limits | 2 |
+| 1 | Usability-test the completed interface with older adults | 3 |
+| 2 | Add independent contemporary cases and evaluate the complete guidance pipeline; improve training from reviewed failures | 5 |
+| 3 | Publish demo/results/limits | 2 |
 
 Architecture and implementation boundaries: [docs/architecture.md](docs/architecture.md).

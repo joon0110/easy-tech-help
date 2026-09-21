@@ -1,0 +1,17 @@
+[theme]
+base = "light"
+primaryColor = "#202020"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F7F7F5"
+textColor = "#202020"
+font = "sans-serif"
+baseFontSize = 18
+baseRadius = "0.75rem"
+buttonRadius = "full"
+showWidgetBorder = true
+
+[client]
+toolbarMode = "viewer"
+
+[browser]
+gatherUsageStats = false
