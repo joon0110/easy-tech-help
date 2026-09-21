@@ -44,6 +44,50 @@ Use train for weight updates, validation for prompt/hyperparameter/checkpoint ch
 
 Metrics should include category accuracy, per-signal precision/recall, evidence validity, abstention/coverage, false alarms on ordinary texts, missed concerning requests, unsafe-action rate, source relevance, and latency, broken out by category. Prevent test inputs from entering training or routine smoke tests. Actual training and full benchmark execution are not implemented yet.
 
+## Selected PyTorch configuration
+
+The development machine was checked on 2026-09-21: Apple M4 with 10 CPU cores,
+16 GB unified memory, arm64 macOS, and 175 GiB free storage. PyTorch reports that
+MPS is both built and available when run outside the restricted test sandbox.
+
+The selected model is `Qwen/Qwen2.5-1.5B-Instruct` at immutable Hugging Face
+revision `989aa7980e4cf806f80c7fef2b1adb7bc71aa306` (Apache-2.0). It has 1.54B
+parameters and a 3,087,467,144-byte BF16 weights file. This is small enough for
+LoRA training on this 16 GB Mac while retaining substantially more capacity than
+the 0.6B alternative. A 4B model leaves too little working memory for reliable
+PyTorch training and evaluation on this machine.
+
+The implementation target is:
+
+| Setting | Selected value |
+| --- | --- |
+| Runtime | PyTorch + Transformers + PEFT + Accelerate |
+| Device | Apple MPS, with an explicit CPU fallback |
+| Method | LoRA; no MLX, bitsandbytes, or QLoRA |
+| LoRA targets | `q_proj`, `v_proj` |
+| LoRA rank / alpha / dropout | 8 / 16 / 0.05 |
+| Sequence length | 1,536 tokens; reject overlength training rows instead of truncating |
+| Precision | FP16 frozen base weights; trainable adapter weights kept in FP32 |
+| Microbatch / accumulation | 1 / 4 |
+| Optimizer | AdamW, learning rate 2e-4, weight decay 0.01 |
+| Schedule | 5 epochs, linear decay, 10% warmup, gradient clipping at 1.0 |
+| Memory control | Gradient checkpointing; model cache disabled during training |
+| Reproducibility | Seed 42; record package versions, revision, settings and metrics |
+| Selection | Lowest validation loss; the test split stays unused until settings freeze |
+| Inference | Greedy decoding, temperature 0, at most 256 new tokens |
+
+Using the pinned tokenizer and the current shared prompt, complete examples are
+1,139–1,212 tokens in train, 1,141–1,189 in validation, and 1,148–1,187 in test.
+The 1,536-token limit therefore preserves every current prompt and target. Future
+data preparation must run the same length check and fail on overflow. Training
+loss must be masked so only assistant completion tokens update the adapter.
+
+Baseline and adapter inference must use this same PyTorch runtime, tokenizer,
+revision, prompt, decoding settings and output validation. This avoids comparing
+an Ollama quantization with a differently configured trained model. The current
+Ollama integration will be replaced rather than retained as a second production
+runtime.
+
 ## Responsibilities
 
 | File / directory | Responsibility |

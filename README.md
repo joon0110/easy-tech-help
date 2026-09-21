@@ -18,6 +18,7 @@ My grandmother lives alone, and helping with confusing phone messages remotely c
 | RAG-connected explanation and source display | Next implementation stage |
 | Risk assessment and safe next-action rules | Planned; observation validation is not a complete safety policy |
 | Family handoff summary | Planned |
+| PyTorch training and inference configuration | Selected and hardware-checked; implementation is next |
 | Baseline evaluation, text fine-tuning, before/after comparison | Planned; no accuracy results yet |
 
 The current app shows **observations only**, not scam verdicts or next-step advice. It does not automatically save user input or add it to training data.
@@ -94,7 +95,9 @@ python -m easy_tech_help.dataset --export artifacts/text-sft
 
 Export creates `train.jsonl` and `valid.jsonl` with system/user/assistant messages. It shares the exact inference prompt and exports only the correct category/signals/issues as the assistant answer. Test examples, wrong answers, rationale and review metadata are excluded. `artifacts/` and `.venv-training/` are ignored by Git. This command prepares data; it **does not train a model**.
 
-All 33 expected labels and evidence quotes received an automated consistency review on 2026-09-21; no expected-label changes were required. This is recorded as `automated_reviewed`, not human or domain-expert review. The examples still need human review and substantially more variety before claiming useful generalization. A training runner, token-length checks, adapter loading and performance comparison remain to be implemented. On this Mac, a text LoRA workflow is the intended next training approach. Choose and record the exact text base-model revision and runtime; compare the same model before and after training. Previously downloaded vision weights in `artifacts/base-model/` and the old MLX-VLM environment are not used by this text setup.
+All 33 expected labels and evidence quotes received an automated consistency review on 2026-09-21; no expected-label changes were required. This is recorded as `automated_reviewed`, not human or domain-expert review. The examples still need human review and substantially more variety before claiming useful generalization. A training runner, token-length checks, adapter loading and performance comparison remain to be implemented.
+
+The selected local training and inference model is `Qwen/Qwen2.5-1.5B-Instruct`, pinned to revision `989aa7980e4cf806f80c7fef2b1adb7bc71aa306`. The target stack is PyTorch + Transformers + PEFT LoRA on Apple MPS; MLX and QLoRA are not part of this project. The same pinned Transformers model will be used for the baseline and trained-adapter evaluation. See [docs/architecture.md](docs/architecture.md#selected-pytorch-configuration) for the checked hardware, sequence lengths and training settings. The current Ollama path remains in place only until the PyTorch runtime is implemented.
 
 ## References and retrieval
 
