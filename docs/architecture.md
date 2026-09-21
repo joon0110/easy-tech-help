@@ -1,6 +1,6 @@
 # Architecture — text V1
 
-The active project direction is English-only text input, output and text fine-tuning. Screenshot inference and image training are outside V1. The earlier screenshot CLI was replaced; historical image assets are retained without being read by the active pipeline.
+The active project direction is English-only text input, output and text fine-tuning. Screenshot inference and image training are outside V1. The earlier screenshot CLI was replaced, and the screenshot evaluation directory was removed. Active training and evaluation data lives in `data/text/`.
 
 ## Current executable flow
 
@@ -58,6 +58,5 @@ Metrics should include category accuracy, per-signal precision/recall, evidence 
 | `knowledge/` | FTC originals and labeled Apple summaries, separate from training |
 | `tests/test_analysis_live.py` | Development smoke cases, not final evaluation |
 | `artifacts/` | Ignored local generated data/weights, no committed model files |
-| `eval/screenshots/` | Historical image fixtures, excluded from text V1 |
 
 Safety, RAG generation, handoff, a text training runner, adapter integration and a benchmark runner are the remaining modules. Existing local vision weights and MLX-VLM installations are not part of the text setup.

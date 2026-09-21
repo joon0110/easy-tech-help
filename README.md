@@ -120,7 +120,7 @@ Inputs are limited to 4,000 characters. Pydantic rejects unknown fields, unsuppo
 
 Exact quotation proves only that words occurred in the input. It does not prove that a signal interpretation, sender claim, or network status is true. Prompt instructions are not a security guarantee. Future safety rules must account for false alarms, missed scams, uncertain context and unsafe actions. Remove passwords, verification codes and personal details before pasting text.
 
-The 24 images in `eval/screenshots/` and `examples/synthetic-message.png` remain as historical assets. The text app, dataset exporter and active tests do not read them. They are not the V1 text benchmark. No fine-tuning or final evaluation has been run.
+The previous screenshot evaluation directory and its 24 images have been removed. Active evaluation data lives in [data/text/validation.jsonl](data/text/validation.jsonl) for development and [data/text/test.jsonl](data/text/test.jsonl) for final evaluation after settings are frozen. The historical demo `examples/synthetic-message.png` remains unused by text V1. No fine-tuning or final evaluation has been run.
 
 ## Next milestones
 
