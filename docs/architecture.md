@@ -34,9 +34,9 @@ Future action policy should use reviewed action IDs/templates, distinguish benig
 
 ## Text learning and evaluation
 
-`data/text/{train,validation,test}.jsonl` contains 33 synthetic English examples covering 33 scenarios (19 train, 7 validation, 7 test). Each record has a correct observation, a wrong alternative, rationale, provenance, review state and optional local knowledge reference IDs. Labels are draft task annotations, not externally verified sender verdicts.
+`data/text/{train,validation,test}.jsonl` contains 33 synthetic English examples covering 33 scenarios (19 train, 7 validation, 7 test). Each record has a correct observation, a wrong alternative, rationale, provenance, review state and optional local knowledge reference IDs. The labels received an automated consistency review on 2026-09-21; this is not human/domain review or an externally verified sender verdict.
 
-`dataset.py` validates gold observations against their original input, rejects silently normalized labels, checks references and exact duplicate IDs/text, and prevents a scenario group from crossing splits. It does not automatically discover all semantic near-duplicates; manually review scenario diversity. Existing scenario assignments are preserved after removing the Korean translations.
+`dataset.py` validates gold and intentionally rejected observations against their original input, rejects silently normalized labels and runtime-only gold issues, checks references and exact duplicate IDs/text, and prevents a scenario group from crossing splits. It does not automatically discover factual labeling errors or all semantic near-duplicates; manually review labels and scenario diversity. Existing scenario assignments are preserved after removing the Korean translations.
 
 `--export artifacts/text-sft` exports only positive assistant completions for train and validation, using the same prompt builder as inference. It never exports test examples or rejected answers. This is supervised-data preparation, not a trainer. Future training should use completion-only loss, check tokenizer lengths before truncation, record model/tokenizer/adapter versions, and compare the same base model and runtime with/without the adapter.
 

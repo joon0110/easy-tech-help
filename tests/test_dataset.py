@@ -24,6 +24,7 @@ def test_dataset_labels_and_split_coverage():
     }
     for rows in dataset.values():
         assert {row.language for row in rows} == {"en"}
+        assert {row.review_status for row in rows} == {"automated_reviewed"}
         assert {row.expected["category"] for row in rows} == {
             "message",
             "alert",
@@ -65,6 +66,24 @@ def test_fabricated_gold_evidence_is_rejected():
     example = load_dataset()["train"][0].model_dump()
     example["expected"]["signals"][0]["evidence"] = "not in the input"
     with pytest.raises(ValidationError, match="actual input"):
+        TextExample.model_validate(example)
+
+
+def test_fabricated_rejected_evidence_is_rejected():
+    example = load_dataset()["train"][0].model_dump()
+    example["rejected_output"]["signals"][0]["evidence"] = "not in the input"
+    with pytest.raises(ValidationError, match="actual input"):
+        TextExample.model_validate(example)
+
+
+def test_runtime_failure_cannot_be_a_gold_label():
+    example = load_dataset()["train"][0].model_dump()
+    example["expected"] = {
+        "category": "unknown",
+        "signals": [],
+        "issues": ["invalid_model_output"],
+    }
+    with pytest.raises(ValidationError, match="runtime-only"):
         TextExample.model_validate(example)
 
 

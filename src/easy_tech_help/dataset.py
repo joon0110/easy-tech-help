@@ -21,7 +21,9 @@ class TextExample(BaseModel):
     scenario_group: str = Field(min_length=1)
     language: Literal["en"]
     provenance: Literal["synthetic_authored"]
-    review_status: Literal["draft_needs_human_review", "human_reviewed"]
+    review_status: Literal[
+        "draft_needs_human_review", "automated_reviewed", "human_reviewed"
+    ]
     case_kind: Literal[
         "suspicious_pattern",
         "ordinary",
@@ -42,9 +44,17 @@ class TextExample(BaseModel):
         target = TextObservation.model_validate(
             self.expected, context={"input_text": self.input_text}
         )
+        rejected = TextObservation.model_validate(
+            self.rejected_output, context={"input_text": self.input_text}
+        )
         if target.training_target() != self.expected:
             raise ValueError("Gold labels must not rely on runtime normalization")
-        if self.expected == self.rejected_output:
+        if rejected.training_target() != self.rejected_output:
+            raise ValueError("Rejected labels must not rely on runtime normalization")
+        reserved_issues = {"invalid_model_output", "incomplete_model_output"}
+        if reserved_issues.intersection(self.expected["issues"]):
+            raise ValueError("Gold labels cannot contain runtime-only issues")
+        if target.training_target() == rejected.training_target():
             raise ValueError("Rejected answer must differ from the gold label")
         return self
 
@@ -122,7 +132,7 @@ def main() -> int:
         parser.exit(1, f"{exc}\n")
     print(json.dumps({split: len(rows) for split, rows in dataset.items()}))
     print(
-        "Labels checked. Synthetic draft labels still need human review; no training ran."
+        "Labels passed automated checks but still need human review; no training ran."
     )
     if args.export:
         print(

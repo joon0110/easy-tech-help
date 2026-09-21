@@ -94,7 +94,7 @@ python -m easy_tech_help.dataset --export artifacts/text-sft
 
 Export creates `train.jsonl` and `valid.jsonl` with system/user/assistant messages. It shares the exact inference prompt and exports only the correct category/signals/issues as the assistant answer. Test examples, wrong answers, rationale and review metadata are excluded. `artifacts/` and `.venv-training/` are ignored by Git. This command prepares data; it **does not train a model**.
 
-These seed labels need human review and substantially more varied examples before claiming useful generalization. A training runner, token-length checks, adapter loading and performance comparison remain to be implemented. On this Mac, a text LoRA workflow is the intended next training approach. Choose and record the exact text base-model revision and runtime; compare the same model before and after training. Previously downloaded vision weights in `artifacts/base-model/` and the old MLX-VLM environment are not used by this text setup.
+All 33 expected labels and evidence quotes received an automated consistency review on 2026-09-21; no expected-label changes were required. This is recorded as `automated_reviewed`, not human or domain-expert review. The examples still need human review and substantially more variety before claiming useful generalization. A training runner, token-length checks, adapter loading and performance comparison remain to be implemented. On this Mac, a text LoRA workflow is the intended next training approach. Choose and record the exact text base-model revision and runtime; compare the same model before and after training. Previously downloaded vision weights in `artifacts/base-model/` and the old MLX-VLM environment are not used by this text setup.
 
 ## References and retrieval
 

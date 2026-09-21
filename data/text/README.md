@@ -1,6 +1,6 @@
 # Text training and evaluation seed data
 
-**Active V1: English text input, output and training.** These examples were authored for EasyTechHelp on 2026-09-20. They are synthetic drafts, not collected scam messages, official FTC/Apple examples, or transcriptions of the old screenshots. There are no real passwords or verification codes; links use reserved `.example` domains and the fictional support number uses a 555-01xx number.
+**Active V1: English text input, output and training.** These examples were authored for EasyTechHelp on 2026-09-20. They are synthetic examples, not collected scam messages, official FTC/Apple examples, or transcriptions of the old screenshots. There are no real passwords or verification codes; links use reserved `.example` domains and the fictional support number uses a 555-01xx number.
 
 | Split | Rows | Scenario groups | Use |
 | --- | ---: | ---: | --- |
@@ -9,6 +9,8 @@
 | `test.jsonl` | 7 | 7 | Frozen final comparison |
 
 There are 33 English examples covering 33 distinct authored scenarios. The Korean translations have been removed, retaining all original English examples and their split assignments. Splits include ordinary/suspicious messages and alerts, Wi-Fi situations, and uncertain/unsupported inputs. Some signals recur across splits intentionally; each scenario group belongs to only one split.
+
+All 33 expected labels, evidence quotes, rationales, reference IDs, and intentionally rejected answers received a systematic automated review on 2026-09-21. No expected-label changes were required. This review checked consistency with the labeling rules and stored source catalog; it is not a human domain-expert review and does not establish real-world accuracy. The final test labels were inspected, but the model was not run on the final test inputs.
 
 ## Quick review examples (from training scenarios)
 
@@ -27,7 +29,7 @@ The JSONL files contain the full inputs and exact structured targets; these exce
 
 - `id`, `scenario_group`, `language`: identity and split grouping; language must be `en`.
 - `provenance`: `synthetic_authored`; never claim these are real incident records.
-- `review_status`: starts as `draft_needs_human_review`. Review the semantics before using them to claim model quality.
+- `review_status`: `automated_reviewed` records this review. Use `human_reviewed` only after a person checks the semantics; automated review is not sufficient for a model-quality claim.
 - `input_text`: exact user text, including necessary context such as “SMS” or “Safari popup.”
 - `expected`: correct structured category/signals/issues for supervised training.
 - `case_kind`: scenario metadata for later analysis, not a model field or proof of authenticity.
@@ -65,7 +67,7 @@ python -m easy_tech_help.dataset
 python -m easy_tech_help.dataset --export artifacts/text-sft
 ```
 
-The exporter writes only `train.jsonl` and `valid.jsonl` chat records, using the runtime prompt and correct assistant answer. Test cases and wrong alternatives never enter the exported trainer files. File validation checks structure, quote presence, references and split grouping, not factual correctness. Training itself, completion masking, tokenizer-length validation, adapter loading and before/after evaluation remain to be implemented.
+The exporter writes only `train.jsonl` and `valid.jsonl` chat records, using the runtime prompt and correct assistant answer. Test cases and wrong alternatives never enter the exported trainer files. File validation checks gold and rejected-answer structure, exact quote presence, runtime-only issue codes, references and split grouping. These checks do not establish factual correctness. Training itself, completion masking, tokenizer-length validation, adapter loading and before/after evaluation remain to be implemented.
 
 Do not report training-set performance as evaluation. Freeze prompts and model selection using validation before running the final test. Test labels are intentionally reviewable in the repository; a held-out claim concerns model/developer tuning use, not secret files. Add fresh independent texts after this small seed set to test generalization.
 
