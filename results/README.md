@@ -1,5 +1,7 @@
 # First PyTorch text fine-tuning run
 
+This is the historical first run from commit `38d1925`. See [the current improvement report](improvement.md) for the selected continuation. The first run's generation inherited the pinned model's `repetition_penalty=1.1`; specifying greedy decoding alone did not disable it. Current inference explicitly uses 1.0. Re-running the commands below with current code therefore does not reproduce these historical generation metrics exactly. The saved raw results remain unchanged.
+
 Run date: 2026-09-21. **Training completed; the model is not ready for reliable user guidance.** This report evaluates observation extraction only. RAG-connected explanations, action safety and family handoff are not implemented yet.
 
 ## Data
@@ -33,7 +35,7 @@ The complete settings, versions, hashes and history are in [training_manifest.js
 
 ## Frozen test comparison
 
-The base and selected adapter used the same prompt, tokenizer, greedy decoding, 256-token output budget and validator. No test-driven prompt, data or model changes were made after this evaluation. Case-level generations and metrics are in [pytorch_test.json](pytorch_test.json).
+The base and selected adapter used the same prompt, tokenizer, greedy decoding with the inherited repetition penalty, 256-token output budget and validator. These were the frozen settings at the time of the first evaluation. Case-level generations and metrics are in [pytorch_test.json](pytorch_test.json). This split has since been inspected and is now a regression set for subsequent changes.
 
 | Metric | Base | Trained adapter |
 | --- | ---: | ---: |

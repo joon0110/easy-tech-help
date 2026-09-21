@@ -19,9 +19,9 @@ My grandmother lives alone, and helping with confusing phone messages remotely c
 | Risk assessment and safe next-action rules | Planned; observation validation is not a complete safety policy |
 | Family handoff summary | Planned |
 | PyTorch training and inference | Implemented: Qwen2.5 1.5B + PEFT LoRA on MPS/CPU |
-| Baseline evaluation and fine-tuning comparison | Completed; [first-run results](results/README.md), with substantial missed-signal limitations |
+| Baseline evaluation and fine-tuning comparison | Completed; [current results](results/improvement.md) and [first-run history](results/README.md); signal errors remain |
 
-The current app shows **observations only**, not scam verdicts or next-step advice. It does not automatically save user input or add it to training data. The first trained model matches 17/34 test observations and recalls only 6/22 labeled signals; it is not ready for reliable user guidance. See the [measured results and failures](results/README.md).
+The current app shows **observations only**, not scam verdicts or next-step advice. It does not automatically save user input or add it to training data. The improved adapter matches 20/34 development observations and 23/34 existing regression examples, compared with 17/34 on each before the fixes. Public-SMS signal extraction remains weak; the model is not ready for reliable user guidance. See the [current results and remaining errors](results/improvement.md); the [first-run report](results/README.md) is historical.
 
 ## Intended V1 flow
 
@@ -53,10 +53,11 @@ Download the pinned model once (about 3.1 GB; internet required):
 python -c "from huggingface_hub import snapshot_download; snapshot_download('Qwen/Qwen2.5-1.5B-Instruct', revision='989aa7980e4cf806f80c7fef2b1adb7bc71aa306', local_dir='artifacts/pytorch-model', allow_patterns=['*.json','*.safetensors','merges.txt','vocab.json','LICENSE'])"
 ```
 
-Train the adapter locally, then start the app. Downloaded weights and trained adapters stay in ignored `artifacts/`; a new clone needs this training step. An existing nonempty adapter directory will not be overwritten.
+Train the initial adapter, then the continuation selected with generated validation answers. Downloaded weights and trained adapters stay in ignored `artifacts/`; a new clone needs both training steps. An existing nonempty adapter directory will not be overwritten. If the initial adapter already exists, run only the continuation command. The app defaults to `artifacts/pytorch-adapter-v2`.
 
 ```bash
 python -m easy_tech_help.training --device mps --output artifacts/pytorch-adapter
+python -m easy_tech_help.training --device mps --init-adapter artifacts/pytorch-adapter --output artifacts/pytorch-adapter-v2 --epochs 3 --learning-rate 0.00005 --decision-weight 4 --select-by-generation
 streamlit run app/app.py
 ```
 
@@ -81,9 +82,11 @@ The repository examples are in [data/text/](data/text/). Read the [labeling guid
 | --- | ---: | ---: | --- |
 | [train.jsonl](data/text/train.jsonl) | 132 | 131 | Supervised fine-tuning |
 | [validation.jsonl](data/text/validation.jsonl) | 34 | 34 | Model/adapter selection |
-| [test.jsonl](data/text/test.jsonl) | 34 | 34 | Final comparison after settings are frozen |
+| [test.jsonl](data/text/test.jsonl) | 34 | 34 | Regression checks; a new independent final set is still needed |
 
 The dataset contains **120 revised synthetic examples plus 80 redacted public SMS**. The UCI subset includes **40 normal (`ham`) and 40 spam messages**, with the original labels stored only as provenance. Public spam includes advertising; it is not a verified fraud label. [Source attribution, original notice and checksums](data/sources/uci_sms/README.md) make the selected records traceable to the downloaded archive. Synthetic examples cover iPhone Wi-Fi, alerts, sensitive requests, missing context and adversarial inputs. Misleading framing was removed, and most message inputs no longer announce their category. Synthetic iPhone prompts are not verified verbatim system text.
+
+**More real-world data is needed for iPhone Wi-Fi states and popups/alerts.** Their current training examples are synthetic, not text collected and verified from actual devices. The public SMS dataset does not cover these categories. Before claiming reliable performance, collect de-identified English text from real iPhone Wi-Fi screens and actual popups/alerts, include normal and problematic cases, review the labels, and reserve separate real examples for evaluation.
 
 Each record contains the input, correct structured answer (`expected`), an intentionally wrong answer (`rejected_output`) with an explanation, scenario group, language, review status and reference IDs. “Ordinary” means the described text has no selected suspicious request; it does not certify the sender as authentic. Wrong answers are for review/error analysis, **never the supervised training target**.
 
@@ -98,12 +101,12 @@ The token check requires the `data` extra and the cached pinned Qwen tokenizer; 
 
 All 200 examples passed structural/evidence/reference checks, case metadata checks, split leakage checks and the pinned tokenizer length check. The longest full sequence is 630 tokens, within the 1,536-token limit. The [preparation report](data/text/preparation_report.json) records coverage, split hashes and token measurements. Review is `automated_reviewed`, not independent human/domain review. Source redactions are reproducible with `python -m easy_tech_help.sms_source` after downloading the original ZIP. Public benchmark messages may already have appeared in model pretraining; this small curated corpus cannot establish real-world accuracy.
 
-The model is pinned to revision `989aa7980e4cf806f80c7fef2b1adb7bc71aa306`, with its weights checksum verified before training. PyTorch computes causal language-model loss only on assistant completion tokens; PEFT updates 1,089,536 LoRA parameters while the base remains frozen. Training uses 5 epochs, rank 8, learning rate 2e-4, microbatch 1 and accumulation 4. BF16 base weights and FP32 adapters are used on MPS. Checkpoints are selected by validation loss. See [architecture](docs/architecture.md) for details.
+The model is pinned to revision `989aa7980e4cf806f80c7fef2b1adb7bc71aa306`, with its weights checksum verified before training. PyTorch computes causal language-model loss only on assistant completion tokens; PEFT updates 1,089,536 LoRA parameters while the base remains frozen. Initial training uses 5 epochs, rank 8, learning rate 2e-4, microbatch 1 and accumulation 4; selection uses validation loss. The continuation uses 3 additional epochs, learning rate 5e-5 and 4× loss weight for category/signal/issue decisions, with unchanged data and prompt. It selects by generated validation observation matches, then ordinary-control errors, signal F1 and loss; epoch 2 was selected. BF16 base weights and FP32 adapters are used on MPS. Inference explicitly disables repetition penalties so signal names and input quotes can repeat. See [architecture](docs/architecture.md) for details.
 
-Compare the same base and adapter on the frozen test split:
+Compare the same base and current adapter on the existing regression split (this test set has already been inspected):
 
 ```bash
-python -m easy_tech_help.evaluation --device mps --split test --output results/pytorch_test.json
+python -m easy_tech_help.evaluation --device mps --split test --output results/pytorch_v2_regression.json
 ```
 
 The evaluator records raw generations, invalid outputs, category accuracy, signal precision/recall, observation matches, ordinary-control extra signals, latency and separate synthetic/public results. These are analysis metrics; they do not measure the unfinished RAG or safety-action pipeline.
@@ -132,7 +135,7 @@ Inputs are limited to 4,000 characters. Pydantic rejects unknown fields, unsuppo
 
 Exact quotation proves only that words occurred in the input. It does not prove that a signal interpretation, sender claim, or network status is true. Prompt instructions are not a security guarantee. Future safety rules must account for false alarms, missed scams, uncertain context and unsafe actions. Remove passwords, verification codes and personal details before pasting text.
 
-Active evaluation data lives in [data/text/validation.jsonl](data/text/validation.jsonl) for development and [data/text/test.jsonl](data/text/test.jsonl) for final comparison. The preparation report captures data checks before training; training manifests and evaluation results are separate. Normal controls are necessary to measure false alarms, and unseen independently reviewed recent messages remain necessary for a stronger evaluation.
+Active evaluation data lives in [data/text/validation.jsonl](data/text/validation.jsonl) for development and [data/text/test.jsonl](data/text/test.jsonl) for regression checks after its initial evaluation. The preparation report captures data checks before training; training manifests and evaluation results are separate. Normal controls are necessary to measure false alarms, and unseen independently reviewed recent messages remain necessary for a stronger evaluation.
 
 ## Next milestones
 

@@ -23,7 +23,7 @@ def load_settings() -> Settings:
     return Settings(
         local_model=os.getenv("EASY_TECH_HELP_LOCAL_MODEL") or None,
         adapter_dir=os.getenv(
-            "EASY_TECH_HELP_ADAPTER_DIR", "artifacts/pytorch-adapter"
+            "EASY_TECH_HELP_ADAPTER_DIR", "artifacts/pytorch-adapter-v2"
         ),
         device=os.getenv("EASY_TECH_HELP_DEVICE", "auto"),
     )

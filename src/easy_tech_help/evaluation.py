@@ -8,7 +8,12 @@ from dataclasses import asdict
 from pathlib import Path
 
 from easy_tech_help.dataset import DEFAULT_DATA_DIR, dataset_report, load_dataset
-from easy_tech_help.runtime import ADAPTER_DIR, MODEL_DIR, LocalRuntime
+from easy_tech_help.runtime import (
+    ADAPTER_DIR,
+    MODEL_DIR,
+    LocalRuntime,
+    generation_settings,
+)
 
 
 def ratio(numerator: int, denominator: int) -> float | None:
@@ -65,6 +70,7 @@ def summarize(cases: list[dict]) -> dict:
 
 def evaluate(args) -> dict:
     import torch
+    from transformers import GenerationConfig
 
     dataset = load_dataset(args.data_dir)
     report = dataset_report(dataset, args.data_dir)
@@ -73,7 +79,14 @@ def evaluate(args) -> dict:
         raise ValueError(
             "Dataset changed since training; evaluation must record a new version"
         )
+    runs = (
+        [("adapter", args.adapter_dir)]
+        if args.adapter_only
+        else [("base", None), ("adapter", args.adapter_dir)]
+    )
     results = {
+        "evaluation_completed": False,
+        "requested_runs": [name for name, _ in runs],
         "split": args.split,
         "data_sha256": manifest["data_sha256"],
         "prompt_sha256": report["prompt_sha256"],
@@ -82,11 +95,14 @@ def evaluate(args) -> dict:
         "adapter_sha256": hashlib.sha256(
             (args.adapter_dir / "adapter_model.safetensors").read_bytes()
         ).hexdigest(),
-        "settings": {"do_sample": False, "max_new_tokens": 256, "device": args.device},
-        "interpretation": "Project-held-out observation evaluation, not scam verdict accuracy. Public texts may occur in pretraining.",
+        "settings": {**generation_settings(), "device": args.device},
+        "evaluation_role": "development"
+        if args.split == "validation"
+        else "regression",
+        "interpretation": "Previously inspected project split; not an independent final test or scam verdict accuracy. Public texts may occur in pretraining.",
         "runs": {},
     }
-    for name, adapter in [("base", None), ("adapter", args.adapter_dir)]:
+    for name, adapter in runs:
         runtime = LocalRuntime(args.model_dir, adapter, args.device)
         cases = []
         for example in dataset[args.split]:
@@ -115,6 +131,13 @@ def evaluate(args) -> dict:
                 flush=True,
             )
         results["runs"][name] = {
+            "effective_generation_config": runtime.model._prepare_generation_config(
+                GenerationConfig(
+                    **generation_settings(),
+                    eos_token_id=runtime.model.generation_config.eos_token_id,
+                    pad_token_id=runtime.tokenizer.pad_token_id,
+                )
+            )[0].to_dict(),
             "metrics": summarize(cases),
             "by_provenance": {
                 p: summarize([c for c in cases if c["provenance"] == p])
@@ -132,6 +155,8 @@ def evaluate(args) -> dict:
         gc.collect()
         if torch.backends.mps.is_available():
             torch.mps.empty_cache()
+    results["evaluation_completed"] = True
+    args.output.write_text(json.dumps(results, indent=2) + "\n")
     return results
 
 
@@ -145,6 +170,11 @@ def main() -> int:
         "--output", type=Path, default=Path("results/pytorch_validation.json")
     )
     parser.add_argument("--device", choices=["auto", "mps", "cpu"], default="auto")
+    parser.add_argument(
+        "--adapter-only",
+        action="store_true",
+        help="Skip a previously measured base run",
+    )
     result = evaluate(parser.parse_args())
     print(json.dumps({k: v["metrics"] for k, v in result["runs"].items()}, indent=2))
     return 0

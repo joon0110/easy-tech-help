@@ -1,0 +1,2541 @@
+{
+  "split": "validation",
+  "data_sha256": {
+    "train": "3431bd218db5e0911c67959549a38190cfdf03ccda2540a5a665a4bc7404e46f",
+    "validation": "c015841bd7e4688a299c80ce1c6ed6084580090df06710cc3f10d657163c4a6d",
+    "test": "dab6be7ea5aaa857bdece9cf16da70e8a57165b211243cb70fd7ba4a0cf5a671"
+  },
+  "prompt_sha256": "d02d719298f1cc7f0d9ce8cb6cb4f19e81d80fb3af34c4689014a93030634d74",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "model_revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+  "adapter_sha256": "3589c0d1acdeca90dcc8e232432a25072d32c6c88c94bf5265808b470dddd0d7",
+  "settings": {
+    "do_sample": false,
+    "num_beams": 1,
+    "max_new_tokens": 256,
+    "repetition_penalty": 1.0,
+    "encoder_repetition_penalty": 1.0,
+    "no_repeat_ngram_size": 0,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": 50,
+    "use_cache": true,
+    "device": "mps"
+  },
+  "evaluation_role": "development",
+  "interpretation": "Project-held-out observation evaluation, not scam verdict accuracy. Public texts may occur in pretraining.",
+  "runs": {
+    "base": {
+      "effective_generation_config": {
+        "max_length": 20,
+        "max_new_tokens": 256,
+        "min_length": 0,
+        "min_new_tokens": null,
+        "early_stopping": false,
+        "max_time": null,
+        "stop_strings": null,
+        "do_sample": false,
+        "num_beams": 1,
+        "use_mtp": null,
+        "use_cache": true,
+        "cache_implementation": null,
+        "cache_config": null,
+        "max_cache_len": null,
+        "temperature": 1.0,
+        "top_k": 50,
+        "top_p": 1.0,
+        "min_p": null,
+        "top_h": null,
+        "typical_p": 1.0,
+        "epsilon_cutoff": 0.0,
+        "eta_cutoff": 0.0,
+        "repetition_penalty": 1.0,
+        "encoder_repetition_penalty": 1.0,
+        "length_penalty": 1.0,
+        "no_repeat_ngram_size": 0,
+        "bad_words_ids": null,
+        "renormalize_logits": null,
+        "forced_bos_token_id": null,
+        "forced_eos_token_id": null,
+        "remove_invalid_values": false,
+        "exponential_decay_length_penalty": null,
+        "suppress_tokens": null,
+        "begin_suppress_tokens": null,
+        "sequence_bias": null,
+        "token_healing": null,
+        "guidance_scale": null,
+        "watermarking_config": null,
+        "num_return_sequences": 1,
+        "output_attentions": null,
+        "output_hidden_states": null,
+        "output_scores": false,
+        "output_logits": null,
+        "return_dict_in_generate": false,
+        "pad_token_id": 151643,
+        "bos_token_id": 151643,
+        "eos_token_id": [
+          151645,
+          151643
+        ],
+        "encoder_no_repeat_ngram_size": 0,
+        "decoder_start_token_id": null,
+        "is_assistant": null,
+        "num_assistant_tokens": 20,
+        "num_assistant_tokens_schedule": "constant",
+        "assistant_confidence_threshold": 0.4,
+        "prompt_lookup_num_tokens": null,
+        "max_matching_ngram_size": null,
+        "assistant_early_exit": null,
+        "assistant_lookbehind": 10,
+        "target_lookbehind": 10,
+        "assistant_ensemble_weight": null,
+        "speculation_type": null,
+        "compile_config": null,
+        "disable_compile": null,
+        "continuous_batching_config": null,
+        "low_memory": null,
+        "penalty_alpha": null,
+        "dola_layers": null,
+        "diversity_penalty": 0.0,
+        "num_beam_groups": 1,
+        "constraints": null,
+        "force_words_ids": null,
+        "prefill_chunk_size": null,
+        "_from_model_config": null,
+        "transformers_version": "5.17.0"
+      },
+      "metrics": {
+        "examples": 34,
+        "valid_outputs": 22,
+        "category_correct": 9,
+        "observation_matches": 3,
+        "category_accuracy": 0.2647,
+        "observation_match_rate": 0.0882,
+        "signal_tp": 9,
+        "signal_fp": 13,
+        "signal_fn": 18,
+        "signal_precision": 0.4091,
+        "signal_recall": 0.3333,
+        "signal_f1": 0.3673,
+        "ordinary_controls": 14,
+        "ordinary_with_extra_signals": 4,
+        "ordinary_extra_signal_rate": 0.2857,
+        "mean_seconds": 2.48
+      },
+      "by_provenance": {
+        "synthetic_authored": {
+          "examples": 20,
+          "valid_outputs": 15,
+          "category_correct": 9,
+          "observation_matches": 3,
+          "category_accuracy": 0.45,
+          "observation_match_rate": 0.15,
+          "signal_tp": 7,
+          "signal_fp": 8,
+          "signal_fn": 13,
+          "signal_precision": 0.4667,
+          "signal_recall": 0.35,
+          "signal_f1": 0.4,
+          "ordinary_controls": 7,
+          "ordinary_with_extra_signals": 3,
+          "ordinary_extra_signal_rate": 0.4286,
+          "mean_seconds": 2.232
+        },
+        "uci_sms_derived": {
+          "examples": 14,
+          "valid_outputs": 7,
+          "category_correct": 0,
+          "observation_matches": 0,
+          "category_accuracy": 0.0,
+          "observation_match_rate": 0.0,
+          "signal_tp": 2,
+          "signal_fp": 5,
+          "signal_fn": 5,
+          "signal_precision": 0.2857,
+          "signal_recall": 0.2857,
+          "signal_f1": 0.2857,
+          "ordinary_controls": 7,
+          "ordinary_with_extra_signals": 1,
+          "ordinary_extra_signal_rate": 0.1429,
+          "mean_seconds": 2.836
+        }
+      },
+      "by_category": {
+        "alert": {
+          "examples": 5,
+          "valid_outputs": 4,
+          "category_correct": 2,
+          "observation_matches": 0,
+          "category_accuracy": 0.4,
+          "observation_match_rate": 0.0,
+          "signal_tp": 2,
+          "signal_fp": 2,
+          "signal_fn": 4,
+          "signal_precision": 0.5,
+          "signal_recall": 0.3333,
+          "signal_f1": 0.4,
+          "ordinary_controls": 3,
+          "ordinary_with_extra_signals": 2,
+          "ordinary_extra_signal_rate": 0.6667,
+          "mean_seconds": 2.173
+        },
+        "message": {
+          "examples": 20,
+          "valid_outputs": 10,
+          "category_correct": 0,
+          "observation_matches": 0,
+          "category_accuracy": 0.0,
+          "observation_match_rate": 0.0,
+          "signal_tp": 4,
+          "signal_fp": 6,
+          "signal_fn": 10,
+          "signal_precision": 0.4,
+          "signal_recall": 0.2857,
+          "signal_f1": 0.3333,
+          "ordinary_controls": 10,
+          "ordinary_with_extra_signals": 1,
+          "ordinary_extra_signal_rate": 0.1,
+          "mean_seconds": 2.633
+        },
+        "unknown": {
+          "examples": 3,
+          "valid_outputs": 2,
+          "category_correct": 1,
+          "observation_matches": 0,
+          "category_accuracy": 0.3333,
+          "observation_match_rate": 0.0,
+          "signal_tp": 0,
+          "signal_fp": 2,
+          "signal_fn": 0,
+          "signal_precision": 0.0,
+          "signal_recall": null,
+          "signal_f1": 0.0,
+          "ordinary_controls": 0,
+          "ordinary_with_extra_signals": 0,
+          "ordinary_extra_signal_rate": null,
+          "mean_seconds": 2.345
+        },
+        "wifi": {
+          "examples": 6,
+          "valid_outputs": 6,
+          "category_correct": 6,
+          "observation_matches": 3,
+          "category_accuracy": 1.0,
+          "observation_match_rate": 0.5,
+          "signal_tp": 3,
+          "signal_fp": 3,
+          "signal_fn": 4,
+          "signal_precision": 0.5,
+          "signal_recall": 0.4286,
+          "signal_f1": 0.4615,
+          "ordinary_controls": 1,
+          "ordinary_with_extra_signals": 1,
+          "ordinary_extra_signal_rate": 1.0,
+          "mean_seconds": 2.296
+        }
+      },
+      "cases": [
+        {
+          "id": "message_subscription_card_en",
+          "input_text": "Your music subscription renewal failed. Send us your full card details by reply to restore service.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "Send us your full card details by reply"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "Your music subscription renewal failed. Send us your full card details by reply to restore service."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"Your music subscription renewal failed. Send us your full card details by reply to restore service.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 46,
+            "seconds": 3.1753302910365164
+          }
+        },
+        {
+          "id": "message_family_dinner_en",
+          "input_text": "Message from Dad: Dinner is at seven. Can you bring bread?",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"message for pasted SMS/email/chat\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"payment_request\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 37,
+            "seconds": 2.0483092088252306
+          }
+        },
+        {
+          "id": "alert_account_password_en",
+          "input_text": "Safari warning: Your account will be disabled in ten minutes. Type your account password into this page to stop it.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "Your account will be disabled in ten minutes"
+              },
+              {
+                "signal": "credential_request",
+                "evidence": "Type your account password into this page"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "Safari warning: Your account will be disabled in ten minutes."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"urgent_security_warning\", \"evidence\": \"Safari warning: Your account will be disabled in ten minutes.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 42,
+            "seconds": 2.510119457729161
+          }
+        },
+        {
+          "id": "alert_cookie_consent_en",
+          "input_text": "Safari popup: This recipe website uses cookies. Accept cookies / Manage preferences.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"cookie_accept\", \"evidence\": \"Accept cookies\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 31,
+            "seconds": 2.164337750058621
+          }
+        },
+        {
+          "id": "wifi_wrong_password_en",
+          "input_text": "My iPhone cannot join my router. A Wi-Fi dialog says Incorrect Password and asks me to enter the network password again.",
+          "provenance": "synthetic_authored",
+          "case_kind": "connection_issue",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_password_prompt",
+                "evidence": "enter the network password again"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_password_prompt",
+                "evidence": "A Wi-Fi dialog says Incorrect Password and asks me to enter the network password again."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_password_prompt\", \"evidence\": \"A Wi-Fi dialog says Incorrect Password and asks me to enter the network password again.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 46,
+            "seconds": 2.53211895795539
+          }
+        },
+        {
+          "id": "wifi_known_office_en",
+          "input_text": "In iPhone Wi-Fi settings there is a checkmark next to my usual office network. I can load the company intranet.",
+          "provenance": "synthetic_authored",
+          "case_kind": "normal_connection",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_connected",
+                "evidence": "a checkmark next to my usual office network"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_connected",
+                "evidence": "In iPhone Wi-Fi settings there is a checkmark next to my usual office network."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_connected\", \"evidence\": \"In iPhone Wi-Fi settings there is a checkmark next to my usual office network.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 45,
+            "seconds": 2.386022959370166
+          }
+        },
+        {
+          "id": "unknown_missing_context_en",
+          "input_text": "It does not work. Help.",
+          "provenance": "synthetic_authored",
+          "case_kind": "unclear",
+          "original_label": null,
+          "expected": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "insufficient_context"
+            ]
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "It does not work. Help."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"urgent_security_warning\", \"evidence\": \"It does not work. Help.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 36,
+            "seconds": 2.1231505000032485
+          }
+        },
+        {
+          "id": "message_music_code_check_en",
+          "input_text": "To validate your entry, send the login code from your phone to https://contest-check.example.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "verification_code_request",
+                "evidence": "send the login code from your phone"
+              },
+              {
+                "signal": "visible_link",
+                "evidence": "https://contest-check.example"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "login code from your phone to https://contest-check.example."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"login code from your phone to https://contest-check.example.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 40,
+            "seconds": 2.2226815838366747
+          }
+        },
+        {
+          "id": "message_repair_booking_en",
+          "input_text": "Install AssistNow, then authorize remote control. Reach our help team on 202-555-0155.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "install_request",
+                "evidence": "Install AssistNow"
+              },
+              {
+                "signal": "remote_access_request",
+                "evidence": "authorize remote control"
+              },
+              {
+                "signal": "support_phone_number",
+                "evidence": "Reach our help team on 202-555-0155"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "install_request",
+                "evidence": "Install AssistNow"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"install_request\", \"evidence\": \"Install AssistNow\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 32,
+            "seconds": 1.9741983753629029
+          }
+        },
+        {
+          "id": "message_museum_hours_en",
+          "input_text": "Museum mailing list: Revised opening hours are posted on https://museum-hours.example. Members can also check the noticeboard.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://museum-hours.example"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [], \"issues\": [\"unsecured_network\"]}",
+            "complete": true,
+            "tokens": 19,
+            "seconds": 1.2747921249829233
+          }
+        },
+        {
+          "id": "message_no_code_needed_en",
+          "input_text": "SMS from a delivery service: Your pickup reference is [REFERENCE]. This is not a sign-in code, and no response is needed.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"message for pasted SMS/email/chat\", \"signals\": [{\"signal\": \"pickup reference\", \"evidence\": \"Your pickup reference is [REFERENCE]\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 42,
+            "seconds": 2.2590343332849443
+          }
+        },
+        {
+          "id": "alert_locked_browser_hotline_en",
+          "input_text": "Safari popup: A hacker is accessing your phone now. Call security support on 202-555-0184 and pay the recovery charge.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "A hacker is accessing your phone now"
+              },
+              {
+                "signal": "support_phone_number",
+                "evidence": "Call security support on 202-555-0184"
+              },
+              {
+                "signal": "payment_request",
+                "evidence": "pay the recovery charge"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "A hacker is accessing your phone now."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"urgent_security_warning\", \"evidence\": \"A hacker is accessing your phone now.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 37,
+            "seconds": 2.09386850008741
+          }
+        },
+        {
+          "id": "alert_accessibility_install_en",
+          "input_text": "I am setting up spoken content on my iPhone. A prompt offers: Install the downloaded accessibility voice to use spoken content offline.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "install_request",
+                "evidence": "Install the downloaded accessibility voice"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_off",
+                "evidence": "Install the downloaded accessibility voice to use spoken content offline."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_off\", \"evidence\": \"Install the downloaded accessibility voice to use spoken content offline.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 39,
+            "seconds": 2.151744666043669
+          }
+        },
+        {
+          "id": "alert_remote_access_denied_en",
+          "input_text": "iPhone app notice: Remote access is not permitted. No technician can control this device through this app.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "remote_access_request",
+                "evidence": "Remote access is not permitted."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"remote_access_request\", \"evidence\": \"Remote access is not permitted.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 35,
+            "seconds": 1.947102083824575
+          }
+        },
+        {
+          "id": "wifi_off_in_control_settings_en",
+          "input_text": "I opened Settings > Wi-Fi on my iPhone and found the switch turned off, although cellular browsing is fine.",
+          "provenance": "synthetic_authored",
+          "case_kind": "connection_issue",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_off",
+                "evidence": "the switch turned off"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_password_prompt",
+                "evidence": "I opened Settings > Wi-Fi on my iPhone and found the switch turned off, although cellular browsing is fine."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_password_prompt\", \"evidence\": \"I opened Settings > Wi-Fi on my iPhone and found the switch turned off, although cellular browsing is fine.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 51,
+            "seconds": 2.656518750358373
+          }
+        },
+        {
+          "id": "wifi_airport_airplane_outage_en",
+          "input_text": "On my iPhone at the airport: Airplane Mode is on, AirportGuest has a blue checkmark, and the status is No Internet Connection.",
+          "provenance": "synthetic_authored",
+          "case_kind": "connection_issue",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "airplane_mode_on",
+                "evidence": "Airplane Mode is on"
+              },
+              {
+                "signal": "wifi_connected",
+                "evidence": "AirportGuest has a blue checkmark"
+              },
+              {
+                "signal": "no_internet",
+                "evidence": "No Internet Connection"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_password_prompt",
+                "evidence": "AirportGuest has a blue checkmark"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_password_prompt\", \"evidence\": \"AirportGuest has a blue checkmark\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 37,
+            "seconds": 2.051322666928172
+          }
+        },
+        {
+          "id": "wifi_public_warning_only_en",
+          "input_text": "Before joining any network on my iPhone, I see an Unsecured Network notice under PlazaVisitor.",
+          "provenance": "synthetic_authored",
+          "case_kind": "connection_issue",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "unsecured_network",
+                "evidence": "Unsecured Network"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "unsecured_network",
+                "evidence": "Unsecured Network notice under PlazaVisitor"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"unsecured_network\", \"evidence\": \"Unsecured Network notice under PlazaVisitor\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 37,
+            "seconds": 2.026429583784193
+          }
+        },
+        {
+          "id": "wifi_hidden_name_en",
+          "input_text": "The iPhone Wi-Fi page asks for a network name when I tap Other. It is not asking for a password yet.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_password_prompt",
+                "evidence": "It is not asking for a password yet."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_password_prompt\", \"evidence\": \"It is not asking for a password yet.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 38,
+            "seconds": 2.123101791832596
+          }
+        },
+        {
+          "id": "unknown_router_toggle_conflict_en",
+          "input_text": "My report says the iPhone Wi-Fi toggle is On and Off at exactly the same moment. Both refer to the same device.",
+          "provenance": "synthetic_authored",
+          "case_kind": "unclear",
+          "original_label": null,
+          "expected": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "contradictory_input"
+            ]
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_off",
+                "evidence": "My report says the iPhone Wi-Fi toggle is On and Off at exactly the same moment."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_off\", \"evidence\": \"My report says the iPhone Wi-Fi toggle is On and Off at exactly the same moment.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 46,
+            "seconds": 2.5086912498809397
+          }
+        },
+        {
+          "id": "unknown_smart_tv_setup_en",
+          "input_text": "Please help me configure the wireless settings on a smart TV running Android TV.",
+          "provenance": "synthetic_authored",
+          "case_kind": "unclear",
+          "original_label": null,
+          "expected": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "unsupported"
+            ]
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wireless settings\", \"evidence\": \"Please help me configure the wireless settings on a smart TV running Android TV.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 44,
+            "seconds": 2.402332416269928
+          }
+        },
+        {
+          "id": "uci_sms_1724",
+          "input_text": "Thought praps you meant another one. Goodo! I'll look tomorrow",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"message for pasted SMS/email/chat\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"Thought praps you meant another one. Goodo! I'll look tomorrow\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 50,
+            "seconds": 2.5764432502910495
+          }
+        },
+        {
+          "id": "uci_sms_0032",
+          "input_text": "Yeah he got in at 2 and was v apologetic. n had fallen out and she was actin like spoilt child and he got caught up in that. Till 2! But we won't go there! Not doing too badly cheers. You?",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"message for pasted SMS/email/chat\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"he got in at 2 and was v apologetic\"}, {\"signal\": \"urgent_security_warning\", \"evidence\": \"Till 2! But we won't go there! Not doing too badly cheers. You?\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 80,
+            "seconds": 4.041005665902048
+          }
+        },
+        {
+          "id": "uci_sms_2487",
+          "input_text": "Lol that's different. I don't go trying to find every real life photo you ever took.",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"message for pasted SMS/email/chat\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"Lol that's different. I don't go trying to find every real life photo you ever took.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 55,
+            "seconds": 2.892833333928138
+          }
+        },
+        {
+          "id": "uci_sms_5520",
+          "input_text": "Miles and smiles r made frm same letters but do u know d difference..? smile on ur face keeps me happy even though I am miles away from u.. :-)keep smiling.. Good nyt",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"message for pasted SMS/email/chat\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"keep smiling.. Good nyt\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 41,
+            "seconds": 2.3244798337109387
+          }
+        },
+        {
+          "id": "uci_sms_2756",
+          "input_text": "Ok Chinese food on its way. When I get fat you're paying for my lipo.",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "Ok Chinese food on its way. When I get fat you're paying for my lipo."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"Ok Chinese food on its way. When I get fat you're paying for my lipo.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 47,
+            "seconds": 2.6722450833767653
+          }
+        },
+        {
+          "id": "uci_sms_2372",
+          "input_text": "That day \u00fc say \u00fc cut ur hair at paragon, is it called hair sense? Do \u00fc noe how much is a hair cut?",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"message for pasted SMS/email/chat\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"That day \u00fc say \u00fc cut ur hair at paragon, is it called hair sense? Do \u00fc noe how much is a hair cut?\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 62,
+            "seconds": 3.178617374971509
+          }
+        },
+        {
+          "id": "uci_sms_4852",
+          "input_text": "Maybe you should find something else to do instead???",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"message for pasted SMS/email/chat\", \"signals\": [], \"issues\": [\"insufficient_context\"]}",
+            "complete": true,
+            "tokens": 25,
+            "seconds": 1.513226750306785
+          }
+        },
+        {
+          "id": "uci_sms_4904",
+          "input_text": "* FREE* POLYPHONIC RINGTONE Text SUPER to [NUMBER] to get your FREE POLY TONE of the week now! 16 SN [POSTBOX] [POSTCODE] subscription 450pw",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "* FREE* POLYPHONIC RINGTONE Text SUPER to [NUMBER] to get your FREE POLY TONE of the week now! 16 SN [POSTBOX] [POSTCODE] subscription 450pw"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "FREE* POLYPHONIC RINGTONE Text SUPER to [NUMBER] to get your FREE POLY TONE of the week now! 16 SN [POSTBOX] [POSTCODE] subscription 450pw"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"FREE* POLYPHONIC RINGTONE Text SUPER to [NUMBER] to get your FREE POLY TONE of the week now! 16 SN [POSTBOX] [POSTCODE] subscription 450pw\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 77,
+            "seconds": 4.017033291049302
+          }
+        },
+        {
+          "id": "uci_sms_0013",
+          "input_text": "URGENT! You have won a 1 week FREE membership in our \u00a3100,000 Prize Jackpot! Txt the word: CLAIM to No: [NUMBER] T&C https://source-link.example LCCLTD [POSTBOX]",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://source-link.example"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "CLAIM"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"CLAIM\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 30,
+            "seconds": 1.7816700409166515
+          }
+        },
+        {
+          "id": "uci_sms_3680",
+          "input_text": "Promotion Number: [NUMBER] - UR awarded a City Break and could WIN a \u00a3200 Summer Shopping spree every WK. Txt STORE to [NUMBER] . SkilGme. TsCs[PHONE]1Winawk!Age16 \u00a31.50perWKsub",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "Promotion Number: [NUMBER] - UR awarded a City Break and could WIN a \u00a3200 Summer Shopping spree every WK. Txt STORE to [NUMBER] . SkilGme. TsCs[PHONE]1Winawk!Age16 \u00a31.50perWKsub"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "invalid_model_output"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"UR awarded a City Break and could WIN a \u00a3200 Summer Shopping spree every WK. Txt STORE to [NUMBER] . SkilGme. TsCs[PHONE]1Winawk!Age16 \u00a31. 50perWKsub\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 81,
+            "seconds": 3.9651484577916563
+          }
+        },
+        {
+          "id": "uci_sms_0636",
+          "input_text": "Dear Voucher Holder, 2 claim this weeks offer, at your PC go to https://source-link.example Ts&Cs apply.2 stop texts txt STOP to [NUMBER].",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://source-link.example"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "claim this weeks offer"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"claim this weeks offer\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 33,
+            "seconds": 1.9078672919422388
+          }
+        },
+        {
+          "id": "uci_sms_1230",
+          "input_text": "FREE entry into our \u00a3250 weekly comp just send the word ENTER to [NUMBER] NOW. 18 T&C https://source-link.example cust care [PHONE].",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://source-link.example"
+              },
+              {
+                "signal": "support_phone_number",
+                "evidence": "cust care [PHONE]"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "FREE entry into our \u00a3250 weekly comp just send the word ENTER to [NUMBER] NOW."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"FREE entry into our \u00a3250 weekly comp just send the word ENTER to [NUMBER] NOW.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 49,
+            "seconds": 2.9137403750792146
+          }
+        },
+        {
+          "id": "uci_sms_2991",
+          "input_text": "No 1 POLYPHONIC tone 4 ur mob every week! Just txt PT2 to [NUMBER]. 1st Tone FREE ! so get txtin now and tell ur friends. 150p/tone. 16 reply HL 4info",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "No 1 POLYPHONIC tone 4 ur mob every week! Just txt PT2 to [NUMBER]. 1st Tone FREE ! so get txtin now and tell ur friends. 150p/tone. 16 reply HL 4info"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "1st Tone FREE ! so get txtin now and tell ur friends."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"1st Tone FREE ! so get txtin now and tell ur friends.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 43,
+            "seconds": 2.5194717086851597
+          }
+        },
+        {
+          "id": "uci_sms_2190",
+          "input_text": "FREE camera phones with linerental from 4.49/month with 750 cross ntwk mins. 1/2 price txt bundle deals also avble. Call [PHONE] or call2optout/J MF",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "FREE camera phones with linerental from 4.49/month with 750 cross ntwk mins. 1/2 price txt bundle deals also avble."
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"FREE camera phones with linerental from 4.49/month with 750 cross ntwk mins. 1/2 price txt bundle deals also avble.\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 64,
+            "seconds": 3.3937730002216995
+          }
+        }
+      ]
+    },
+    "adapter": {
+      "effective_generation_config": {
+        "max_length": 20,
+        "max_new_tokens": 256,
+        "min_length": 0,
+        "min_new_tokens": null,
+        "early_stopping": false,
+        "max_time": null,
+        "stop_strings": null,
+        "do_sample": false,
+        "num_beams": 1,
+        "use_mtp": null,
+        "use_cache": true,
+        "cache_implementation": null,
+        "cache_config": null,
+        "max_cache_len": null,
+        "temperature": 1.0,
+        "top_k": 50,
+        "top_p": 1.0,
+        "min_p": null,
+        "top_h": null,
+        "typical_p": 1.0,
+        "epsilon_cutoff": 0.0,
+        "eta_cutoff": 0.0,
+        "repetition_penalty": 1.0,
+        "encoder_repetition_penalty": 1.0,
+        "length_penalty": 1.0,
+        "no_repeat_ngram_size": 0,
+        "bad_words_ids": null,
+        "renormalize_logits": null,
+        "forced_bos_token_id": null,
+        "forced_eos_token_id": null,
+        "remove_invalid_values": false,
+        "exponential_decay_length_penalty": null,
+        "suppress_tokens": null,
+        "begin_suppress_tokens": null,
+        "sequence_bias": null,
+        "token_healing": null,
+        "guidance_scale": null,
+        "watermarking_config": null,
+        "num_return_sequences": 1,
+        "output_attentions": null,
+        "output_hidden_states": null,
+        "output_scores": false,
+        "output_logits": null,
+        "return_dict_in_generate": false,
+        "pad_token_id": 151643,
+        "bos_token_id": 151643,
+        "eos_token_id": [
+          151645,
+          151643
+        ],
+        "encoder_no_repeat_ngram_size": 0,
+        "decoder_start_token_id": null,
+        "is_assistant": null,
+        "num_assistant_tokens": 20,
+        "num_assistant_tokens_schedule": "constant",
+        "assistant_confidence_threshold": 0.4,
+        "prompt_lookup_num_tokens": null,
+        "max_matching_ngram_size": null,
+        "assistant_early_exit": null,
+        "assistant_lookbehind": 10,
+        "target_lookbehind": 10,
+        "assistant_ensemble_weight": null,
+        "speculation_type": null,
+        "compile_config": null,
+        "disable_compile": null,
+        "continuous_batching_config": null,
+        "low_memory": null,
+        "penalty_alpha": null,
+        "dola_layers": null,
+        "diversity_penalty": 0.0,
+        "num_beam_groups": 1,
+        "constraints": null,
+        "force_words_ids": null,
+        "prefill_chunk_size": null,
+        "_from_model_config": null,
+        "transformers_version": "5.17.0"
+      },
+      "metrics": {
+        "examples": 34,
+        "valid_outputs": 34,
+        "category_correct": 31,
+        "observation_matches": 20,
+        "category_accuracy": 0.9118,
+        "observation_match_rate": 0.5882,
+        "signal_tp": 19,
+        "signal_fp": 7,
+        "signal_fn": 8,
+        "signal_precision": 0.7308,
+        "signal_recall": 0.7037,
+        "signal_f1": 0.717,
+        "ordinary_controls": 14,
+        "ordinary_with_extra_signals": 3,
+        "ordinary_extra_signal_rate": 0.2143,
+        "mean_seconds": 2.1
+      },
+      "by_provenance": {
+        "synthetic_authored": {
+          "examples": 20,
+          "valid_outputs": 20,
+          "category_correct": 17,
+          "observation_matches": 10,
+          "category_accuracy": 0.85,
+          "observation_match_rate": 0.5,
+          "signal_tp": 15,
+          "signal_fp": 4,
+          "signal_fn": 5,
+          "signal_precision": 0.7895,
+          "signal_recall": 0.75,
+          "signal_f1": 0.7692,
+          "ordinary_controls": 7,
+          "ordinary_with_extra_signals": 3,
+          "ordinary_extra_signal_rate": 0.4286,
+          "mean_seconds": 2.137
+        },
+        "uci_sms_derived": {
+          "examples": 14,
+          "valid_outputs": 14,
+          "category_correct": 14,
+          "observation_matches": 10,
+          "category_accuracy": 1.0,
+          "observation_match_rate": 0.7143,
+          "signal_tp": 4,
+          "signal_fp": 3,
+          "signal_fn": 3,
+          "signal_precision": 0.5714,
+          "signal_recall": 0.5714,
+          "signal_f1": 0.5714,
+          "ordinary_controls": 7,
+          "ordinary_with_extra_signals": 0,
+          "ordinary_extra_signal_rate": 0.0,
+          "mean_seconds": 2.048
+        }
+      },
+      "by_category": {
+        "alert": {
+          "examples": 5,
+          "valid_outputs": 5,
+          "category_correct": 4,
+          "observation_matches": 1,
+          "category_accuracy": 0.8,
+          "observation_match_rate": 0.2,
+          "signal_tp": 4,
+          "signal_fp": 3,
+          "signal_fn": 2,
+          "signal_precision": 0.5714,
+          "signal_recall": 0.6667,
+          "signal_f1": 0.6154,
+          "ordinary_controls": 3,
+          "ordinary_with_extra_signals": 2,
+          "ordinary_extra_signal_rate": 0.6667,
+          "mean_seconds": 2.441
+        },
+        "message": {
+          "examples": 20,
+          "valid_outputs": 20,
+          "category_correct": 20,
+          "observation_matches": 14,
+          "category_accuracy": 1.0,
+          "observation_match_rate": 0.7,
+          "signal_tp": 9,
+          "signal_fp": 3,
+          "signal_fn": 5,
+          "signal_precision": 0.75,
+          "signal_recall": 0.6429,
+          "signal_f1": 0.6923,
+          "ordinary_controls": 10,
+          "ordinary_with_extra_signals": 0,
+          "ordinary_extra_signal_rate": 0.0,
+          "mean_seconds": 2.069
+        },
+        "unknown": {
+          "examples": 3,
+          "valid_outputs": 3,
+          "category_correct": 1,
+          "observation_matches": 1,
+          "category_accuracy": 0.3333,
+          "observation_match_rate": 0.3333,
+          "signal_tp": 0,
+          "signal_fp": 0,
+          "signal_fn": 0,
+          "signal_precision": null,
+          "signal_recall": null,
+          "signal_f1": null,
+          "ordinary_controls": 0,
+          "ordinary_with_extra_signals": 0,
+          "ordinary_extra_signal_rate": null,
+          "mean_seconds": 1.294
+        },
+        "wifi": {
+          "examples": 6,
+          "valid_outputs": 6,
+          "category_correct": 6,
+          "observation_matches": 4,
+          "category_accuracy": 1.0,
+          "observation_match_rate": 0.6667,
+          "signal_tp": 6,
+          "signal_fp": 1,
+          "signal_fn": 1,
+          "signal_precision": 0.8571,
+          "signal_recall": 0.8571,
+          "signal_f1": 0.8571,
+          "ordinary_controls": 1,
+          "ordinary_with_extra_signals": 1,
+          "ordinary_extra_signal_rate": 1.0,
+          "mean_seconds": 2.325
+        }
+      },
+      "cases": [
+        {
+          "id": "message_subscription_card_en",
+          "input_text": "Your music subscription renewal failed. Send us your full card details by reply to restore service.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "Send us your full card details by reply"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "Send us your full card details"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"Send us your full card details\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 35,
+            "seconds": 2.2656332501210272
+          }
+        },
+        {
+          "id": "message_family_dinner_en",
+          "input_text": "Message from Dad: Dinner is at seven. Can you bring bread?",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.2164902091026306
+          }
+        },
+        {
+          "id": "alert_account_password_en",
+          "input_text": "Safari warning: Your account will be disabled in ten minutes. Type your account password into this page to stop it.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "Your account will be disabled in ten minutes"
+              },
+              {
+                "signal": "credential_request",
+                "evidence": "Type your account password into this page"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "Your account will be disabled in ten minutes"
+              },
+              {
+                "signal": "credential_request",
+                "evidence": "Type your account password into this page"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"urgent_security_warning\", \"evidence\": \"Your account will be disabled in ten minutes\"}, {\"signal\": \"credential_request\", \"evidence\": \"Type your account password into this page\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 58,
+            "seconds": 3.2648263326846063
+          }
+        },
+        {
+          "id": "alert_cookie_consent_en",
+          "input_text": "Safari popup: This recipe website uses cookies. Accept cookies / Manage preferences.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "credential_request",
+                "evidence": "Accept cookies"
+              },
+              {
+                "signal": "visible_link",
+                "evidence": "Manage preferences"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"credential_request\", \"evidence\": \"Accept cookies\"}, {\"signal\": \"visible_link\", \"evidence\": \"Manage preferences\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 46,
+            "seconds": 2.585803125053644
+          }
+        },
+        {
+          "id": "wifi_wrong_password_en",
+          "input_text": "My iPhone cannot join my router. A Wi-Fi dialog says Incorrect Password and asks me to enter the network password again.",
+          "provenance": "synthetic_authored",
+          "case_kind": "connection_issue",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_password_prompt",
+                "evidence": "enter the network password again"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_password_prompt",
+                "evidence": "asks me to enter the network password again"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_password_prompt\", \"evidence\": \"asks me to enter the network password again\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 38,
+            "seconds": 2.2767784167081118
+          }
+        },
+        {
+          "id": "wifi_known_office_en",
+          "input_text": "In iPhone Wi-Fi settings there is a checkmark next to my usual office network. I can load the company intranet.",
+          "provenance": "synthetic_authored",
+          "case_kind": "normal_connection",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_connected",
+                "evidence": "a checkmark next to my usual office network"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_connected",
+                "evidence": "there is a checkmark next to my usual office network"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_connected\", \"evidence\": \"there is a checkmark next to my usual office network\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 40,
+            "seconds": 2.360193375032395
+          }
+        },
+        {
+          "id": "unknown_missing_context_en",
+          "input_text": "It does not work. Help.",
+          "provenance": "synthetic_authored",
+          "case_kind": "unclear",
+          "original_label": null,
+          "expected": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "insufficient_context"
+            ]
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.2722099591046572
+          }
+        },
+        {
+          "id": "message_music_code_check_en",
+          "input_text": "To validate your entry, send the login code from your phone to https://contest-check.example.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "verification_code_request",
+                "evidence": "send the login code from your phone"
+              },
+              {
+                "signal": "visible_link",
+                "evidence": "https://contest-check.example"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "verification_code_request",
+                "evidence": "send the login code from your phone to https://contest-check.example"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"verification_code_request\", \"evidence\": \"send the login code from your phone to https://contest-check.example\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 43,
+            "seconds": 2.4746319171972573
+          }
+        },
+        {
+          "id": "message_repair_booking_en",
+          "input_text": "Install AssistNow, then authorize remote control. Reach our help team on 202-555-0155.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "install_request",
+                "evidence": "Install AssistNow"
+              },
+              {
+                "signal": "remote_access_request",
+                "evidence": "authorize remote control"
+              },
+              {
+                "signal": "support_phone_number",
+                "evidence": "Reach our help team on 202-555-0155"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "install_request",
+                "evidence": "Install AssistNow"
+              },
+              {
+                "signal": "remote_access_request",
+                "evidence": "authorize remote control"
+              },
+              {
+                "signal": "support_phone_number",
+                "evidence": "Reach our help team on 202-555-0155"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"install_request\", \"evidence\": \"Install AssistNow\"}, {\"signal\": \"remote_access_request\", \"evidence\": \"authorize remote control\"}, {\"signal\": \"support_phone_number\", \"evidence\": \"Reach our help team on 202-555-0155\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 81,
+            "seconds": 4.311188499908894
+          }
+        },
+        {
+          "id": "message_museum_hours_en",
+          "input_text": "Museum mailing list: Revised opening hours are posted on https://museum-hours.example. Members can also check the noticeboard.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://museum-hours.example"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.2484659170731902
+          }
+        },
+        {
+          "id": "message_no_code_needed_en",
+          "input_text": "SMS from a delivery service: Your pickup reference is [REFERENCE]. This is not a sign-in code, and no response is needed.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.1949667502194643
+          }
+        },
+        {
+          "id": "alert_locked_browser_hotline_en",
+          "input_text": "Safari popup: A hacker is accessing your phone now. Call security support on 202-555-0184 and pay the recovery charge.",
+          "provenance": "synthetic_authored",
+          "case_kind": "suspicious_pattern",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "A hacker is accessing your phone now"
+              },
+              {
+                "signal": "support_phone_number",
+                "evidence": "Call security support on 202-555-0184"
+              },
+              {
+                "signal": "payment_request",
+                "evidence": "pay the recovery charge"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "urgent_security_warning",
+                "evidence": "A hacker is accessing your phone now"
+              },
+              {
+                "signal": "payment_request",
+                "evidence": "pay the recovery charge"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"urgent_security_warning\", \"evidence\": \"A hacker is accessing your phone now\"}, {\"signal\": \"payment_request\", \"evidence\": \"pay the recovery charge\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 54,
+            "seconds": 3.039958625100553
+          }
+        },
+        {
+          "id": "alert_accessibility_install_en",
+          "input_text": "I am setting up spoken content on my iPhone. A prompt offers: Install the downloaded accessibility voice to use spoken content offline.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "install_request",
+                "evidence": "Install the downloaded accessibility voice"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "unsupported"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"unknown\", \"signals\": [], \"issues\": [\"unsupported\"]}",
+            "complete": true,
+            "tokens": 17,
+            "seconds": 1.2662674579769373
+          }
+        },
+        {
+          "id": "alert_remote_access_denied_en",
+          "input_text": "iPhone app notice: Remote access is not permitted. No technician can control this device through this app.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "alert",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "alert",
+            "signals": [
+              {
+                "signal": "remote_access_request",
+                "evidence": "Remote access is not permitted"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"alert\", \"signals\": [{\"signal\": \"remote_access_request\", \"evidence\": \"Remote access is not permitted\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 35,
+            "seconds": 2.048513375222683
+          }
+        },
+        {
+          "id": "wifi_off_in_control_settings_en",
+          "input_text": "I opened Settings > Wi-Fi on my iPhone and found the switch turned off, although cellular browsing is fine.",
+          "provenance": "synthetic_authored",
+          "case_kind": "connection_issue",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_off",
+                "evidence": "the switch turned off"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_off",
+                "evidence": "the switch turned off"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_off\", \"evidence\": \"the switch turned off\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 33,
+            "seconds": 2.0082632917910814
+          }
+        },
+        {
+          "id": "wifi_airport_airplane_outage_en",
+          "input_text": "On my iPhone at the airport: Airplane Mode is on, AirportGuest has a blue checkmark, and the status is No Internet Connection.",
+          "provenance": "synthetic_authored",
+          "case_kind": "connection_issue",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "airplane_mode_on",
+                "evidence": "Airplane Mode is on"
+              },
+              {
+                "signal": "wifi_connected",
+                "evidence": "AirportGuest has a blue checkmark"
+              },
+              {
+                "signal": "no_internet",
+                "evidence": "No Internet Connection"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "airplane_mode_on",
+                "evidence": "Airplane Mode is on"
+              },
+              {
+                "signal": "no_internet",
+                "evidence": "No Internet Connection"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"airplane_mode_on\", \"evidence\": \"Airplane Mode is on\"}, {\"signal\": \"no_internet\", \"evidence\": \"No Internet Connection\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 53,
+            "seconds": 2.9735045838169754
+          }
+        },
+        {
+          "id": "wifi_public_warning_only_en",
+          "input_text": "Before joining any network on my iPhone, I see an Unsecured Network notice under PlazaVisitor.",
+          "provenance": "synthetic_authored",
+          "case_kind": "connection_issue",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "unsecured_network",
+                "evidence": "Unsecured Network"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "unsecured_network",
+                "evidence": "Unsecured Network"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"unsecured_network\", \"evidence\": \"Unsecured Network\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 33,
+            "seconds": 2.1771858748979867
+          }
+        },
+        {
+          "id": "wifi_hidden_name_en",
+          "input_text": "The iPhone Wi-Fi page asks for a network name when I tap Other. It is not asking for a password yet.",
+          "provenance": "synthetic_authored",
+          "case_kind": "ordinary",
+          "original_label": null,
+          "expected": {
+            "category": "wifi",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "wifi",
+            "signals": [
+              {
+                "signal": "wifi_connected",
+                "evidence": "It is not asking for a password yet"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"wifi\", \"signals\": [{\"signal\": \"wifi_connected\", \"evidence\": \"It is not asking for a password yet\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 37,
+            "seconds": 2.1535539575852454
+          }
+        },
+        {
+          "id": "unknown_router_toggle_conflict_en",
+          "input_text": "My report says the iPhone Wi-Fi toggle is On and Off at exactly the same moment. Both refer to the same device.",
+          "provenance": "synthetic_authored",
+          "case_kind": "unclear",
+          "original_label": null,
+          "expected": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "contradictory_input"
+            ]
+          },
+          "predicted": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "contradictory_input"
+            ]
+          },
+          "generation": {
+            "text": "{\"category\": \"unknown\", \"signals\": [], \"issues\": [\"contradictory_input\"]}",
+            "complete": true,
+            "tokens": 20,
+            "seconds": 1.409402874764055
+          }
+        },
+        {
+          "id": "unknown_smart_tv_setup_en",
+          "input_text": "Please help me configure the wireless settings on a smart TV running Android TV.",
+          "provenance": "synthetic_authored",
+          "case_kind": "unclear",
+          "original_label": null,
+          "expected": {
+            "category": "unknown",
+            "signals": [],
+            "issues": [
+              "unsupported"
+            ]
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.2002017498016357
+          }
+        },
+        {
+          "id": "uci_sms_1724",
+          "input_text": "Thought praps you meant another one. Goodo! I'll look tomorrow",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.1780038750730455
+          }
+        },
+        {
+          "id": "uci_sms_0032",
+          "input_text": "Yeah he got in at 2 and was v apologetic. n had fallen out and she was actin like spoilt child and he got caught up in that. Till 2! But we won't go there! Not doing too badly cheers. You?",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.257725624833256
+          }
+        },
+        {
+          "id": "uci_sms_2487",
+          "input_text": "Lol that's different. I don't go trying to find every real life photo you ever took.",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.247697209008038
+          }
+        },
+        {
+          "id": "uci_sms_5520",
+          "input_text": "Miles and smiles r made frm same letters but do u know d difference..? smile on ur face keeps me happy even though I am miles away from u.. :-)keep smiling.. Good nyt",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.2405167920514941
+          }
+        },
+        {
+          "id": "uci_sms_2756",
+          "input_text": "Ok Chinese food on its way. When I get fat you're paying for my lipo.",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.1902707093395293
+          }
+        },
+        {
+          "id": "uci_sms_2372",
+          "input_text": "That day \u00fc say \u00fc cut ur hair at paragon, is it called hair sense? Do \u00fc noe how much is a hair cut?",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.2691529588773847
+          }
+        },
+        {
+          "id": "uci_sms_4852",
+          "input_text": "Maybe you should find something else to do instead???",
+          "provenance": "uci_sms_derived",
+          "case_kind": "ordinary",
+          "original_label": "ham",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.1857917909510434
+          }
+        },
+        {
+          "id": "uci_sms_4904",
+          "input_text": "* FREE* POLYPHONIC RINGTONE Text SUPER to [NUMBER] to get your FREE POLY TONE of the week now! 16 SN [POSTBOX] [POSTCODE] subscription 450pw",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "* FREE* POLYPHONIC RINGTONE Text SUPER to [NUMBER] to get your FREE POLY TONE of the week now! 16 SN [POSTBOX] [POSTCODE] subscription 450pw"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "FREE* POLYPHONIC RINGTONE Text SUPER to [NUMBER] to get your FREE POLY TONE of the week now! 16 SN [POSTBOX] [POSTCODE] subscription 450pw"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"FREE* POLYPHONIC RINGTONE Text SUPER to [NUMBER] to get your FREE POLY TONE of the week now! 16 SN [POSTBOX] [POSTCODE] subscription 450pw\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 77,
+            "seconds": 4.089349083136767
+          }
+        },
+        {
+          "id": "uci_sms_0013",
+          "input_text": "URGENT! You have won a 1 week FREE membership in our \u00a3100,000 Prize Jackpot! Txt the word: CLAIM to No: [NUMBER] T&C https://source-link.example LCCLTD [POSTBOX]",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://source-link.example"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://source-link.example LCCLTD [POSTBOX]"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"visible_link\", \"evidence\": \"https://source-link.example LCCLTD [POSTBOX]\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 41,
+            "seconds": 2.377194959204644
+          }
+        },
+        {
+          "id": "uci_sms_3680",
+          "input_text": "Promotion Number: [NUMBER] - UR awarded a City Break and could WIN a \u00a3200 Summer Shopping spree every WK. Txt STORE to [NUMBER] . SkilGme. TsCs[PHONE]1Winawk!Age16 \u00a31.50perWKsub",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "Promotion Number: [NUMBER] - UR awarded a City Break and could WIN a \u00a3200 Summer Shopping spree every WK. Txt STORE to [NUMBER] . SkilGme. TsCs[PHONE]1Winawk!Age16 \u00a31.50perWKsub"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "SkilGme. TsCs[PHONE]1Winawk!Age16 \u00a31.50perWKsub"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"visible_link\", \"evidence\": \"SkilGme. TsCs[PHONE]1Winawk!Age16 \u00a31.50perWKsub\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 54,
+            "seconds": 2.9754476249217987
+          }
+        },
+        {
+          "id": "uci_sms_0636",
+          "input_text": "Dear Voucher Holder, 2 claim this weeks offer, at your PC go to https://source-link.example Ts&Cs apply.2 stop texts txt STOP to [NUMBER].",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://source-link.example"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.2352848751470447
+          }
+        },
+        {
+          "id": "uci_sms_1230",
+          "input_text": "FREE entry into our \u00a3250 weekly comp just send the word ENTER to [NUMBER] NOW. 18 T&C https://source-link.example cust care [PHONE].",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://source-link.example"
+              },
+              {
+                "signal": "support_phone_number",
+                "evidence": "cust care [PHONE]"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "visible_link",
+                "evidence": "https://source-link.example"
+              },
+              {
+                "signal": "support_phone_number",
+                "evidence": "[PHONE]"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"visible_link\", \"evidence\": \"https://source-link.example\"}, {\"signal\": \"support_phone_number\", \"evidence\": \"[PHONE]\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 50,
+            "seconds": 2.916515791323036
+          }
+        },
+        {
+          "id": "uci_sms_2991",
+          "input_text": "No 1 POLYPHONIC tone 4 ur mob every week! Just txt PT2 to [NUMBER]. 1st Tone FREE ! so get txtin now and tell ur friends. 150p/tone. 16 reply HL 4info",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "No 1 POLYPHONIC tone 4 ur mob every week! Just txt PT2 to [NUMBER]. 1st Tone FREE ! so get txtin now and tell ur friends. 150p/tone. 16 reply HL 4info"
+              }
+            ],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [], \"issues\": []}",
+            "complete": true,
+            "tokens": 16,
+            "seconds": 1.2330282921902835
+          }
+        },
+        {
+          "id": "uci_sms_2190",
+          "input_text": "FREE camera phones with linerental from 4.49/month with 750 cross ntwk mins. 1/2 price txt bundle deals also avble. Call [PHONE] or call2optout/J MF",
+          "provenance": "uci_sms_derived",
+          "case_kind": "unsolicited_promotion",
+          "original_label": "spam",
+          "expected": {
+            "category": "message",
+            "signals": [],
+            "issues": []
+          },
+          "predicted": {
+            "category": "message",
+            "signals": [
+              {
+                "signal": "payment_request",
+                "evidence": "FREE camera phones with linerental from 4.49/month with 750 cross ntwk mins. 1/2 price txt bundle deals also avble. Call [PHONE] or call2optout/J MF"
+              },
+              {
+                "signal": "visible_link",
+                "evidence": "Call [PHONE] or call2optout/J MF"
+              }
+            ],
+            "issues": []
+          },
+          "generation": {
+            "text": "{\"category\": \"message\", \"signals\": [{\"signal\": \"payment_request\", \"evidence\": \"FREE camera phones with linerental from 4.49/month with 750 cross ntwk mins. 1/2 price txt bundle deals also avble. Call [PHONE] or call2optout/J MF\"}, {\"signal\": \"visible_link\", \"evidence\": \"Call [PHONE] or call2optout/J MF\"}], \"issues\": []}",
+            "complete": true,
+            "tokens": 100,
+            "seconds": 5.27180941728875
+          }
+        }
+      ]
+    }
+  }
+}

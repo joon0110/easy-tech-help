@@ -6,7 +6,7 @@
 | --- | ---: | ---: | --- |
 | `train.jsonl` | 132 | 131 | Weight updates: 80 synthetic + 52 public SMS |
 | `validation.jsonl` | 34 | 34 | Checkpoint selection: 20 synthetic + 14 public SMS |
-| `test.jsonl` | 34 | 34 | Frozen final comparison: 20 synthetic + 14 public SMS |
+| `test.jsonl` | 34 | 34 | Previously inspected regression set: 20 synthetic + 14 public SMS |
 
 There are 200 English examples in 199 scenario groups. Two versions of one UCI prize campaign share a group inside train. Synthetic scenario split assignments are retained, but misleading framing such as "pretending to be support" and many SMS/Email prefixes were removed. Prompt-injection cases now use `adversarial_input`, not `ordinary`. Simulated iPhone prompts are user descriptions, not verified verbatim iOS UI strings. Scenario IDs do not prove semantic independence: concepts necessarily recur across splits.
 
@@ -112,7 +112,7 @@ Validation rejects incorrect structure, invented evidence, runtime-only gold iss
 
 Preparation itself does not update weights. `easy_tech_help.training` implements PyTorch LoRA with completion-only loss and validation checkpoint selection. `easy_tech_help.evaluation` compares base and adapter with identical prompts/decoding, including separate synthetic/public metrics. See the root README for commands. The preparation report records the pre-training integrity check, not model performance.
 
-Do not report training-set performance as evaluation. Freeze prompts and model selection using validation before running the final test. Test labels are intentionally reviewable in the repository; a held-out claim concerns model/developer tuning use, not secret files. Add fresh independent texts after this small seed set to test generalization.
+Do not report training-set performance as evaluation. The initial test results have been inspected; subsequent runs on these same 34 examples are regression checks, not independent final evaluation. The continuation keeps every input and label unchanged and selects checkpoints using validation only. Reserve fresh, independently reviewed texts before claiming generalization. Test labels are intentionally reviewable in the repository; a held-out claim concerns model/developer tuning use, not secret files.
 
 ## Background references
 

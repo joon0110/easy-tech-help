@@ -12,7 +12,23 @@ from easy_tech_help.dataset import TOKENIZER_ID, TOKENIZER_REVISION
 from easy_tech_help.schemas import TextObservation, validate_input
 
 MODEL_DIR = Path("artifacts/pytorch-model")
-ADAPTER_DIR = Path("artifacts/pytorch-adapter")
+ADAPTER_DIR = Path("artifacts/pytorch-adapter-v2")
+
+
+def generation_settings(max_new_tokens: int = 256) -> dict:
+    """Explicit extraction settings; do not inherit Qwen's chat penalties."""
+    return {
+        "do_sample": False,
+        "num_beams": 1,
+        "max_new_tokens": max_new_tokens,
+        "repetition_penalty": 1.0,
+        "encoder_repetition_penalty": 1.0,
+        "no_repeat_ngram_size": 0,
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 50,
+        "use_cache": True,
+    }
 
 
 @dataclass
@@ -53,6 +69,15 @@ def load_base(model_dir: Path, device: str):
 
 
 class LocalRuntime:
+    @classmethod
+    def from_loaded(cls, model, tokenizer, device: str):
+        """Wrap a trusted in-memory training model for validation only."""
+        runtime = cls.__new__(cls)
+        runtime.model = model
+        runtime.tokenizer = tokenizer
+        runtime.device = device
+        return runtime
+
     def __init__(
         self,
         model_dir: Path = MODEL_DIR,
@@ -98,11 +123,9 @@ class LocalRuntime:
         eos = self.model.generation_config.eos_token_id
         stop_ids = eos if isinstance(eos, list) else [eos]
         settings = GenerationConfig(
-            do_sample=False,
-            max_new_tokens=max_new_tokens,
+            **generation_settings(max_new_tokens),
             eos_token_id=eos,
             pad_token_id=self.tokenizer.pad_token_id,
-            use_cache=True,
         )
         start = time.perf_counter()
         with torch.inference_mode():

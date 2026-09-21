@@ -62,13 +62,19 @@ The tested machine is an Apple M4 with 10 CPU cores and 16 GB unified memory. MP
 | Memory control | Gradient checkpointing, cache disabled, project only supervised logit positions |
 | Selection | Lowest validation loss |
 | Reproducibility | Seed 42, model/data/prompt hashes, versions and run history |
-| Inference | Greedy decoding, at most 256 new tokens, 4,096-token context budget |
+| Inference | Greedy decoding, explicit repetition penalty 1.0, at most 256 new tokens, 4,096-token context budget |
 
 `training.py` verifies the downloaded weights checksum, uses only train for gradient updates and validation for checkpoint selection, checks finite loss/gradients, and saves the best adapter plus a manifest. Test token lengths and integrity are checked, but test sequences never enter model forward/backward passes during training. A tiny real PyTorch test checks the optimized completion loss against full masked causal loss. GPU runs are not guaranteed bit-for-bit identical across platforms.
 
+The table above describes initial training. The current default adapter is a three-epoch continuation at learning rate 5e-5, with epoch 2 selected; see [measured results](../results/improvement.md). For continuation, `--init-adapter` loads completed LoRA weights and starts a fresh optimizer/scheduler; it does not resume optimizer state. It requires unchanged prompt and data fingerprints. `--decision-weight 4` increases the loss weight of category values, signal names, issue lists and signal-list opening/closing/continuation tokens. Evidence tokens otherwise keep weight 1. Weights are assigned with the tokenizer's character offsets, and accumulation divides by the total supervised weight. Validation loss remains unweighted for comparison.
+
+`--select-by-generation` compares actual validation outputs before training and after each epoch. Selection prioritizes observation matches, then fewer ordinary cases with extra signals, higher signal F1 and lower validation loss. The initial adapter is a candidate, so a worse continuation does not automatically replace it. The manifest records generated validation metrics, selection settings and the starting adapter hash. Teacher-forced loss alone can hide missing signals during generation.
+
 ## Evaluation
 
-`evaluation.py` runs the same base and adapter with identical prompt, tokenizer, decoding and validation on a frozen split. It verifies split fingerprints against the training manifest and records raw generations and per-case outputs. Metrics include valid outputs, category accuracy, observation matches, signal precision/recall/F1, extra signals on ordinary controls and latency, with category and provenance breakdowns.
+`evaluation.py` runs the same base and adapter with identical prompt, tokenizer, decoding and validation on a frozen split. It verifies split fingerprints against the training manifest and records raw generations, effective generation configuration and per-case outputs. Metrics include valid outputs, category accuracy, observation matches, signal precision/recall/F1, extra signals on ordinary controls and latency, with category and provenance breakdowns. The existing test split has already been inspected and is now reported as regression data; validation is development data.
+
+Extraction disables the pinned model's default repetition penalty of 1.1 by explicitly setting 1.0. Repeated signal names, JSON keys and exact input quotes are expected in this task. In Transformers 5.17.0, unspecified generation fields inherit model defaults, so setting only `do_sample=False` does not remove this penalty. A tiny real PyTorch generation test verifies that the extraction settings preserve raw greedy token scores even when the model carries chat defaults. The first evaluation predates this fix; it remains a historical run, not a measurement of current inference settings.
 
 An observation match requires a valid response and correct category, signal set and issue set. Different literal evidence spans can match; quote validation does not establish semantic grounding. Extra-signal rate is not a scam false-positive rate. Full RAG relevance and action-safety metrics require the remaining pipeline.
 
