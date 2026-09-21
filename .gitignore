@@ -219,3 +219,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local fine-tuning environment and downloaded/generated model weights
+.venv-training/
+artifacts/

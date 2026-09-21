@@ -5,11 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "easy-tech-help"
 version = "0.1.0"
-description = "Local multimodal AI tech support for older adults and their families"
+description = "Local text-based AI tech support for older adults and their families"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "Pillow>=11,<13",
     "pydantic>=2.8,<3",
     "python-dotenv>=1,<2",
     "streamlit>=1,<2",
@@ -26,7 +25,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["live: opt-in integration checks requiring local Ollama and a vision model"]
+markers = ["live: opt-in integration checks requiring local Ollama and a text model"]
 
 [tool.ruff]
 target-version = "py311"

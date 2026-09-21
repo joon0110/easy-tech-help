@@ -1,11 +1,19 @@
-"""Constrained observations; application text is never written by the model."""
+"""Structured text observations, checked against the actual user input."""
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    computed_field,
+    model_validator,
+)
 
-ScreenType = Literal["popup", "message", "wifi", "unknown"]
-VisibleSignal = Literal[
+MAX_TEXT_CHARS = 4_000
+Category = Literal["message", "alert", "wifi", "unknown"]
+Signal = Literal[
     "urgent_security_warning",
     "support_phone_number",
     "payment_request",
@@ -19,106 +27,104 @@ VisibleSignal = Literal[
     "wifi_connected",
     "no_internet",
     "wifi_password_prompt",
+    "unsecured_network",
 ]
 AnalysisIssue = Literal[
-    "blurred",
-    "cropped",
-    "unreadable",
     "unsupported",
     "insufficient_context",
+    "contradictory_input",
     "invalid_model_output",
     "incomplete_model_output",
 ]
-TextFragment = Annotated[str, Field(min_length=1, max_length=500)]
-
+CONNECTIVITY_SIGNALS = {
+    "wifi_off",
+    "airplane_mode_on",
+    "wifi_connected",
+    "no_internet",
+    "wifi_password_prompt",
+    "unsecured_network",
+}
 SUMMARIES = {
-    "popup": "A browser pop-up or alert is visible.",
-    "message": "A message or email screen is visible.",
-    "wifi": "A Wi-Fi settings screen is visible.",
-    "unknown": "The screen could not be identified reliably.",
+    "message": "This is a message or email.",
+    "alert": "This is a notification or popup.",
+    "wifi": "This describes an iPhone Wi-Fi connection.",
+    "unknown": "There is not enough information to identify the situation reliably.",
 }
 ISSUE_TEXT = {
-    "blurred": "The image is too blurred to interpret reliably.",
-    "cropped": "The image is missing necessary screen context.",
-    "unreadable": "The relevant text cannot be read reliably.",
-    "unsupported": "The screen is outside the supported iPhone categories.",
-    "insufficient_context": "There is not enough context to identify the screen.",
-    "invalid_model_output": "The model output failed validation.",
-    "incomplete_model_output": "The model stopped before completing its response.",
+    "unsupported": "V1 supports English messages, alerts and iPhone Wi-Fi descriptions.",
+    "insufficient_context": "Please include the message text or describe the current situation.",
+    "contradictory_input": "The descriptions of the current state contradict each other.",
+    "invalid_model_output": "The model output did not pass validation.",
+    "incomplete_model_output": "The model did not finish its response.",
 }
+
+
+def validate_input(text: str) -> str:
+    """Reject invalid inputs before contacting a model; preserve exact quotes."""
+    if not isinstance(text, str) or not text.strip():
+        raise ValueError("Please enter text to analyze.")
+    if len(text) > MAX_TEXT_CHARS:
+        raise ValueError(f"Please enter no more than {MAX_TEXT_CHARS:,} characters.")
+    if any(ord(char) < 32 and char not in "\n\r\t" for char in text):
+        raise ValueError("Please enter plain text only.")
+    return text
 
 
 class ObservedSignal(BaseModel):
-    """A proposed signal paired with a quote from the extracted screen text."""
-
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    signal: VisibleSignal
-    evidence: TextFragment = Field(description="An exact quote from visible_text.")
+    signal: Signal
+    evidence: Annotated[str, Field(min_length=1, max_length=500)] = Field(
+        description="An exact, case-sensitive substring of the user's input text."
+    )
 
 
-class ScreenObservation(BaseModel):
-    """Validate consistency, not the factual accuracy of model observations."""
+class TextObservation(BaseModel):
+    """Validate structure and evidence presence, not authenticity or meaning."""
 
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-
-    screen_type: ScreenType
-    visible_text: list[TextFragment] = Field(max_length=30)
-    visible_signals: list[ObservedSignal] = Field(max_length=5)
-    quality_issues: list[AnalysisIssue] = Field(max_length=7)
+    model_config = ConfigDict(extra="forbid")
+    category: Category
+    signals: list[ObservedSignal] = Field(max_length=8)
+    issues: list[AnalysisIssue] = Field(max_length=5)
 
     @model_validator(mode="after")
-    def validate_observations(self) -> "ScreenObservation":
-        if self.screen_type == "unknown" and not self.quality_issues:
-            self.quality_issues = ["insufficient_context"]
-        if self.quality_issues:
-            # Unclear screens must not pass actionable signals to later stages.
-            self.screen_type = "unknown"
-            self.visible_signals = []
-        elif not self.visible_text:
-            raise ValueError("identified screens require readable text")
-        signals = [item.signal for item in self.visible_signals]
-        if len(signals) != len(set(signals)):
-            raise ValueError("visible signals must be unique")
-        if {"wifi_off", "wifi_connected"}.issubset(signals):
-            raise ValueError("Wi-Fi cannot be both off and connected")
-        connectivity = {
-            "wifi_off",
-            "airplane_mode_on",
-            "wifi_connected",
-            "no_internet",
-            "wifi_password_prompt",
-        }
-        if self.screen_type != "wifi" and connectivity.intersection(signals):
-            raise ValueError("connectivity signals require a Wi-Fi settings screen")
-        fragments = [" ".join(text.split()) for text in self.visible_text]
-        for item in self.visible_signals:
-            if not any(" ".join(item.evidence.split()) in text for text in fragments):
-                raise ValueError("signal evidence must quote visible_text")
+    def validate_observation(self, info: ValidationInfo) -> "TextObservation":
+        if self.category == "unknown" and not self.issues:
+            self.issues = ["insufficient_context"]
+        if self.issues:
+            self.category = "unknown"
+            self.signals = []
+        names = [item.signal for item in self.signals]
+        if len(names) != len(set(names)):
+            raise ValueError("signals must be unique")
+        if {"wifi_off", "wifi_connected"}.issubset(names):
+            raise ValueError("Wi-Fi cannot currently be both off and connected")
+        if self.category != "wifi" and CONNECTIVITY_SIGNALS.intersection(names):
+            raise ValueError("connectivity signals require a Wi-Fi description")
+        source = (info.context or {}).get("input_text")
+        for item in self.signals:
+            if not isinstance(source, str) or item.evidence not in source:
+                raise ValueError("evidence must quote the actual input text")
         return self
 
     @computed_field
     @property
-    def screen_summary(self) -> str:
-        return SUMMARIES[self.screen_type]
+    def summary(self) -> str:
+        return SUMMARIES[self.category]
 
     @computed_field
     @property
     def uncertainty(self) -> str:
-        if self.quality_issues:
-            return " ".join(
-                ISSUE_TEXT[issue] for issue in dict.fromkeys(self.quality_issues)
-            )
+        if self.issues:
+            return " ".join(ISSUE_TEXT[issue] for issue in dict.fromkeys(self.issues))
         return (
-            "Text and signals are model observations and may be incorrect. "
-            "User intent, authenticity, and actual connectivity cannot be verified "
-            "from this screenshot alone."
+            "This analysis describes the text you entered. It does not verify the sender "
+            "or the actual connection. No detected warning signs does not guarantee safety."
         )
 
+    def training_target(self) -> dict:
+        """Only model-authored fields, shared by inference and fine-tuning."""
+        return self.model_dump(include={"category", "signals", "issues"})
+
     @classmethod
-    def unknown(cls, reason: AnalysisIssue) -> "ScreenObservation":
-        return cls(
-            screen_type="unknown",
-            visible_text=[],
-            visible_signals=[],
-            quality_issues=[reason],
-        )
+    def unknown(cls, reason: AnalysisIssue) -> "TextObservation":
+        return cls(category="unknown", signals=[], issues=[reason])

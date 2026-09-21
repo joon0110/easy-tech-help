@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 @dataclass(frozen=True)
 class Settings:
-    """Local vision model selection."""
+    """Local text model selection."""
 
     local_model: str | None
 

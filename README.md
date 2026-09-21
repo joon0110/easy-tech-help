@@ -1,87 +1,135 @@
 # EasyTechHelp
 
-Local multimodal AI tech support for older adults and their families
+Local text-based GenAI tech support for older adults and their families.
 
-My grandmother lives alone, and when she runs into something confusing on her phone, helping remotely can be difficult because she may not know how to describe exactly what she is seeing. I am building EasyTechHelp so an older adult can upload a screenshot, understand what is on the screen, identify potential risks, and get a safe next step. If they still need help, the system will create a concise summary that a family member can quickly understand.
+My grandmother lives alone, and helping with confusing phone messages remotely can be difficult. EasyTechHelp is being built to explain a pasted message, alert, or iPhone Wi-Fi description, identify concerns, and suggest a safe next step with sources. If the issue remains difficult, it will prepare a summary to share with family.
+
+**V1 direction: English-only text input and text fine-tuning, local inference, RAG, and application safety rules.** Screenshot input and image training are outside the active V1. This decision replaces the earlier screenshot plan.
 
 ## Current status
 
-This repository contains the project foundation, local screenshot analysis from the command line, and a small local knowledge base: six original FTC web pages and four original summaries based on Apple support pages. The Streamlit app is still a preview; screenshot upload, RAG-connected guidance, safety enforcement, family handoff, and benchmark evaluation are **not implemented yet**. The sections below describe the intended iPhone-only V1 product, not currently available features.
+| Component | Status |
+| --- | --- |
+| Python package, configuration, pytest, Ruff | Implemented |
+| Text input in Streamlit and CLI | Implemented |
+| Local text model → validated category, signals, quoted evidence | Implemented |
+| English labeled text examples and SFT export | Prepared: 33 synthetic draft examples; no fine-tuning has run |
+| Local reference corpus and keyword retrieval | Implemented separately; 6 FTC originals + 4 Apple-based summaries |
+| RAG-connected explanation and source display | Next implementation stage |
+| Risk assessment and safe next-action rules | Planned; observation validation is not a complete safety policy |
+| Family handoff summary | Planned |
+| Baseline evaluation, text fine-tuning, before/after comparison | Planned; no accuracy results yet |
 
-## V1 scope
+The current app shows **observations only**, not scam verdicts or next-step advice. It does not automatically save user input or add it to training data.
 
-- Safari pop-ups and security warnings on iPhone, including harmless examples
-- Text messages and emails viewed on iPhone
-- iPhone Wi-Fi and connectivity settings
-- An `unknown` result when a screenshot is unclear or outside those categories
+## Intended V1 flow
 
-The planned local-only pipeline will read a screenshot using local image understanding, convert it into validated structured observations, retrieve relevant local help documents, apply application-level safety rules, and render short guidance with source links. The model's free-form answer will not be shown directly. A copyable family summary and a fixed 24-screenshot evaluation benchmark are also planned.
+```text
+Pasted text / typed Wi-Fi status
+  → local text model (later: same base model with a text-trained adapter)
+  → validated category + signals + exact quotes from the input
+  → retrieve relevant local FTC / Apple-based help documents
+  → generate an explanation grounded in those documents
+  → application safety rules select allowed actions and reject unsafe guidance
+  → explanation / cautions / next action / sources / optional family summary
+```
 
-## Run the foundation locally
+Scope: SMS/email/chat (`message`), alerts/notifications/browser popups (`alert`), iPhone connectivity descriptions (`wifi`), and missing/unsupported/contradictory context (`unknown`). Ordinary messages and harmless alerts are necessary controls. A Wi-Fi problem is not automatically a scam. V1 supports English input and output. Other languages are outside the supported scope; the prompt requests an unsupported result, but language detection is not a deterministic input check.
 
-Use Python 3.11 or newer. From the repository root:
+## Run locally
+
+Use Python 3.11+ and [Ollama](https://docs.ollama.com/macos). Run from this repository root:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[dev]'
-streamlit run app/app.py
+ollama pull qwen3:4b
 ```
 
-On systems where `python3` is older than 3.11, use a newer Python executable in the first command. The app opens in the browser and displays the current project preview. V1 runs on your own computer and does not require a hosted-model API key.
-
-## Analyze a screenshot locally
-
-Install [Ollama](https://docs.ollama.com/macos) and download the local [Qwen3-VL 4B Instruct](https://ollama.com/library/qwen3-vl/tags) vision model. Start Ollama in one terminal, then use a second terminal for the remaining commands:
+Start Ollama if the desktop app or another process is not already serving it:
 
 ```bash
 ollama serve
 ```
 
+In another terminal with the virtual environment activated:
+
 ```bash
-ollama pull qwen3-vl:4b-instruct
-python -m easy_tech_help.analysis /path/to/iphone-screenshot.png
+streamlit run app/app.py
 ```
 
-For a quick demo, run `python -m easy_tech_help.analysis examples/synthetic-message.png`.
-This generated example is separate from the 24 fixed evaluation screenshots.
-
-The command outputs JSON containing:
-
-- `screen_type`: `popup`, `message`, `wifi`, or `unknown`.
-- `visible_text`: short transcriptions, treated as untrusted screen content.
-- `visible_signals`: signal IDs paired with evidence quotes from `visible_text`.
-- `quality_issues`: reasons to abstain when a screen cannot be interpreted reliably.
-- `screen_summary` and `uncertainty`: text generated by application templates.
-
-It reads one PNG or JPEG up to 15 MB and 6,000 pixels per side, and sends it only to Ollama on `127.0.0.1`, bypassing proxy settings. Invalid or unfinished model responses become `unknown`; connection errors produce an error message and a nonzero CLI exit code. If the model reports a quality issue, the application returns `unknown` and clears the signals. Signals must quote extracted text, so V1 may omit states conveyed only by an icon or a switch.
-
-Validation checks format and consistency, not factual truth. The model can still misread text, miss quality problems, or attach the wrong signal to a quote. It cannot authenticate senders or networks. User intent is not inferred, and this stage does not generate risk ratings or next-step advice. On-screen instructions can appear in `visible_text`; later stages must continue treating that field as data.
-
-Set `EASY_TECH_HELP_LOCAL_MODEL` in `.env` or pass `--model` to select another locally installed vision model. The default is `qwen3-vl:4b-instruct`.
-
-Run the checks with:
+CLI alternatives:
 
 ```bash
-python -m pytest
+python -m easy_tech_help.analysis --text 'Text message: Reply with your verification code.'
+python -m easy_tech_help.analysis --file examples/message.txt
+python -m easy_tech_help.analysis --text 'iPhone Wi-Fi is off.' --model qwen3:4b
+```
+
+The default is the local [Qwen3 4B text model](https://ollama.com/library/qwen3:4b). Initial model/package downloads require internet access; analysis calls only `127.0.0.1:11434`, bypassing proxy environment variables. No hosted-model API key is needed. `.env.example` documents the optional `EASY_TECH_HELP_LOCAL_MODEL` setting; creating `.env` is unnecessary for the default. If an existing `.env` still selects `qwen3-vl:4b-instruct`, update it to `qwen3:4b`.
+
+The former positional image-path CLI and `analyze_screenshot()` have been replaced with `--text` / `--file` and `analyze_text()`. Image parsing, image request payloads, image tests and the direct Pillow dependency were removed. Streamlit may still install Pillow as its own dependency.
+
+## Text data and training setup
+
+The repository examples are in [data/text/](data/text/). Read the [labeling guide](data/text/README.md) before changing them.
+
+| Split | Examples | Independent scenario groups | Purpose |
+| --- | ---: | ---: | --- |
+| [train.jsonl](data/text/train.jsonl) | 19 | 19 | Future supervised fine-tuning |
+| [validation.jsonl](data/text/validation.jsonl) | 7 | 7 | Development and model/adapter selection |
+| [test.jsonl](data/text/test.jsonl) | 7 | 7 | Final comparison after settings are frozen |
+
+The dataset contains **33 authored English examples covering 33 scenarios**. The earlier Korean translations were removed; the existing scenario split assignments are preserved. Examples include suspicious payment/password/code requests, ordinary receipts and notifications, Wi-Fi problems, normal connections, missing context, and an instruction-injection case. They are newly authored synthetic text, not transcriptions of the previous 24 screenshots and not quotations from FTC or Apple.
+
+Each record contains the input, correct structured answer (`expected`), an intentionally wrong answer (`rejected_output`) with an explanation, scenario group, language, review status and reference IDs. “Ordinary” means the described text has no selected suspicious request; it does not certify the sender as authentic. Wrong answers are for review/error analysis, **never the supervised training target**.
+
+Validate and export:
+
+```bash
+python -m easy_tech_help.dataset
+python -m easy_tech_help.dataset --export artifacts/text-sft
+```
+
+Export creates `train.jsonl` and `valid.jsonl` with system/user/assistant messages. It shares the exact inference prompt and exports only the correct category/signals/issues as the assistant answer. Test examples, wrong answers, rationale and review metadata are excluded. `artifacts/` and `.venv-training/` are ignored by Git. This command prepares data; it **does not train a model**.
+
+These seed labels need human review and substantially more varied examples before claiming useful generalization. A training runner, token-length checks, adapter loading and performance comparison remain to be implemented. On this Mac, a text LoRA workflow is the intended next training approach. Choose and record the exact text base-model revision and runtime; compare the same model before and after training. Previously downloaded vision weights in `artifacts/base-model/` and the old MLX-VLM environment are not used by this text setup.
+
+## References and retrieval
+
+[knowledge/README.md](knowledge/README.md) describes the six original FTC HTML pages, four clearly labeled Apple-based summaries, and source URLs. `retrieval.py` searches local article text using weighted English keyword overlap. It does not fetch a source link at runtime, use a vector database, or yet feed retrieved documents to a generative model.
+
+Connecting RAG is the next step. It must map analysis category `alert` to the existing knowledge category `popup`, turn validated signals into useful English search queries. A missing source must remain explicit. Training examples are not RAG evidence, and user input must never be added to the trusted corpus automatically.
+
+## Validation and limits
+
+```bash
+python -m pytest -q
 ruff check .
 ruff format --check .
 ```
 
-To also run the seven development-image checks against the actual local model:
+Optional local-model smoke tests (development inputs, not the held-out dataset):
 
 ```bash
 EASY_TECH_HELP_RUN_LIVE_TESTS=1 python -m pytest tests/test_analysis_live.py -v -s
 ```
 
-These opt-in checks cover message, pop-up, Wi-Fi, blur, missing screen context, unsupported images, and on-screen instructions. They generate temporary test inputs in memory and do not use the 24 fixed benchmark images. A passing smoke check is not a benchmark accuracy result or a guarantee against prompt injection. Ordinary `pytest` skips these checks so a model server is not required for unit tests.
+Inputs are limited to 4,000 characters. Pydantic rejects unknown fields, unsupported categories, duplicate signals, incompatible connection states, and evidence absent from the original input. Invalid or unfinished generations become `unknown`; runtime failures are reported explicitly. Application templates supply the displayed summary and uncertainty text.
 
-The ten local RAG documents are six original FTC HTML pages in [knowledge/original/](knowledge/original/) and four short Apple-based summaries in [knowledge/apple_summaries/](knowledge/apple_summaries/). `src/easy_tech_help/retrieval.py` extracts FTC article text and reads the summary text locally without a network connection or database. The catalog labels each item as an original or a summary and stores its source URL. Apple's pages themselves are not copied into this repository. The search results are not yet connected to the Streamlit screen.
+Exact quotation proves only that words occurred in the input. It does not prove that a signal interpretation, sender claim, or network status is true. Prompt instructions are not a security guarantee. Future safety rules must account for false alarms, missed scams, uncertain context and unsafe actions. Remove passwords, verification codes and personal details before pasting text.
 
-`.env.example` documents the optional model setting; copying it to `.env` is unnecessary when using the default model. `.env` is ignored by Git. No hosted-model API key is required.
+The 24 images in `eval/screenshots/` and `examples/synthetic-message.png` remain as historical assets. The text app, dataset exporter and active tests do not read them. They are not the V1 text benchmark. No fine-tuning or final evaluation has been run.
 
-## Design and limitations
+## Next milestones
 
-The planned architecture and module responsibilities are in [docs/architecture.md](docs/architecture.md). V1 will process one iPhone screenshot at a time on the same computer. Android screens are outside V1. The app cannot independently authenticate a message sender, website, phone number, or Wi-Fi network from an image alone. User screenshots will not become RAG source documents or be permanently stored.
+| Order | Work | Difficulty (1–5) |
+| --- | --- | ---: |
+| 1 | Review text labels; implement and record baseline evaluation | 3 |
+| 2 | Connect local RAG and code-enforced safe guidance | 5 |
+| 3 | Expand text training data; run LoRA and compare the same base model before/after | 5 |
+| 4 | Build family handoff and finish the readable product interface | 3 |
+| 5 | Freeze settings, run final held-out evaluation, publish demo/results/limits | 4 |
 
-The repository includes a generated demonstration screenshot, not a real user message. There are no benchmark results yet. Results will be published only after the fixed benchmark has actually run.
+Architecture and implementation boundaries: [docs/architecture.md](docs/architecture.md).
